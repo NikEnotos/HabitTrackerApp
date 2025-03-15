@@ -1,6 +1,5 @@
 package com.example.tracker.screens
 
-import android.service.autofill.OnClickAction
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -9,14 +8,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.material.Text
-import androidx.compose.material.TextButton
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -25,11 +22,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.tracker.AuthState
 import com.example.tracker.AuthViewModel
 import com.example.tracker.R
 
@@ -43,24 +38,12 @@ fun LogInScreen(modifier: Modifier = Modifier, navController: NavController, aut
     var password by remember {
         mutableStateOf("")
     }
-
-
-    val authState = authViewModel.authState.observeAsState()
-    val context = LocalContext.current
-    LaunchedEffect(authState.value) {
-        when (authState.value) {
-            is AuthState.Authenticated -> navController.navigate("home") {
-                popUpTo("login") { inclusive = true }
-                launchSingleTop = true
-            }
-            is AuthState.Error -> Toast.makeText(
-                context,
-                (authState.value as AuthState.Error).message,
-                Toast.LENGTH_SHORT
-            ).show()
-            else -> Unit
-        }
+    var isLoading by remember {
+        mutableStateOf(false)
     }
+
+    val context = LocalContext.current
+
 
     Column(
         modifier = modifier.fillMaxSize(),
@@ -99,17 +82,32 @@ fun LogInScreen(modifier: Modifier = Modifier, navController: NavController, aut
         Spacer(modifier = Modifier.height(8.dp))
 
         Button(onClick = {
-            authViewModel.login(email, password)
+            isLoading = true
+            authViewModel.login(email, password){success, errorMessage->
+                if(success){
+                    isLoading = false
+                    navController.navigate("home"){
+                        popUpTo("login"){inclusive = true}
+                    }
+                }
+                else{
+                    isLoading = false
+                    Toast.makeText(context, errorMessage?:"Something went wrong", Toast.LENGTH_SHORT).show()
+                }
+
+            }
         },
-            enabled = email.isNotBlank() && password.isNotBlank() && authState.value !is AuthState.Loading
+            enabled = email.isNotBlank() && password.isNotBlank() && !isLoading
         ) {
             Text("Log In")
         }
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        TextButton(onClick = { navController.navigate("signup")
-        }) {
+        TextButton(onClick = {
+            navController.navigate("signup")
+        })
+        {
             Text("Don't have an account? Sign Up")
         }
 

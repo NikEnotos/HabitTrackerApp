@@ -11,19 +11,17 @@ import androidx.compose.material.TextButton
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.tracker.AuthState
 import com.example.tracker.AuthViewModel
 
 @Composable
@@ -38,25 +36,12 @@ fun SignUpScreen(modifier: Modifier = Modifier, navController: NavController, au
     var confirmPassword by remember {
         mutableStateOf("")
     }
+    var isLoading by remember {
+        mutableStateOf(false)
+    }
 
-    val authState = authViewModel.authState.observeAsState()
     val context = LocalContext.current
 
-    LaunchedEffect(authState.value) {
-        when (authState.value) {
-            is AuthState.Authenticated -> navController.navigate("home"){
-                popUpTo("signup") { inclusive = true }
-                launchSingleTop = true
-            }
-            is AuthState.Error -> Toast.makeText(
-                context,
-                (authState.value as AuthState.Error).message,
-                Toast.LENGTH_SHORT
-            ).show()
-
-            else -> Unit
-        }
-    }
 
     Column(
         modifier = modifier.fillMaxSize(),
@@ -78,7 +63,8 @@ fun SignUpScreen(modifier: Modifier = Modifier, navController: NavController, au
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
-            label = { Text("Password") }
+            label = { Text("Password") },
+            visualTransformation = PasswordVisualTransformation()
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -86,23 +72,41 @@ fun SignUpScreen(modifier: Modifier = Modifier, navController: NavController, au
         OutlinedTextField(
             value = confirmPassword,
             onValueChange = { confirmPassword = it },
-            label = { Text("Confirm password") }
+            label = { Text("Confirm password") },
+            visualTransformation = PasswordVisualTransformation()
         )
 
         Spacer(modifier = Modifier.height(8.dp))
 
         Button(onClick = {
-            authViewModel.signup(email, password, confirmPassword)
+            isLoading = true
+            authViewModel.signup(email, password, confirmPassword){success, errorMessage->
+                if(success){
+                    isLoading = false
+                    navController.navigate("home"){
+                        popUpTo("signup"){inclusive = true}
+                    }
+                }
+                else{
+                    isLoading = false
+                    Toast.makeText(context, errorMessage?:"Something went wrong", Toast.LENGTH_SHORT).show()
+                }
+
+            }
         },
-            enabled = email.isNotBlank() && password.isNotBlank() && confirmPassword.isNotBlank() && authState.value !is AuthState.Loading
+            enabled = email.isNotBlank() && password.isNotBlank() && confirmPassword.isNotBlank() && !isLoading
         ) {
             Text("Create Account")
         }
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        TextButton(onClick = { navController.navigate("login")
-        }) {
+        TextButton(onClick = {
+            navController.navigate("login"){
+                popUpTo("signup"){inclusive = true}
+            }
+        })
+        {
             Text("Already have an account? Log in")
         }
 
