@@ -2,10 +2,35 @@ package com.example.tracker.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
+val PrimaryGreen = Color(0xFF4CAF50)
+val SecondaryGreen = Color(0xFF66BB6A)
+val tertiaryGreen = Color(0xFF66BB6A)
 
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+
+// Buttons
+val CompleteButtonColor = PrimaryGreen
+val IncompleteButtonColor = Color.LightGray
+
+val InactiveButtonColor = Color.LightGray
+val ActiveButtonColor = PrimaryGreen
+
+val PrimaryButton = Color.LightGray
+val SecondaryButton = Color.LightGray  // Edit button
+
+
+// Text
+val WhitePrimaryText = Color.White
+
+val BlackPrimaryText = Color.Black
+val BlackSecondaryText = Color.DarkGray
+val BlackTertiaryText = Color.Gray
+
+
+// Background
+val PrimaryBackground = Color.White
+
+
+// Days
+val ActiveDayColor = SecondaryGreen
+val InactiveDayColor = Color.LightGray
+val CurrentDayOutlineColor = Color(0xFFFF7043)

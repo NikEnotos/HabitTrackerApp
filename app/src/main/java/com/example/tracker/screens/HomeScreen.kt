@@ -59,8 +59,8 @@ fun HomeScreen(modifier: Modifier = Modifier, navController: NavController, auth
                             selectedTextColor = Color.White,
                             unselectedIconColor = Color.White,
                             unselectedTextColor = Color.White,
-                            disabledIconColor = Color.Yellow,
-                            disabledTextColor = Color.Yellow,
+                            disabledIconColor = Color.LightGray,
+                            disabledTextColor = Color.LightGray,
                         )
                     )
                 }

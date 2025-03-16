@@ -20,6 +20,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.tracker.model.HabitModel
+import com.example.tracker.ui.theme.*
 import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.auth
@@ -27,8 +28,6 @@ import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
 fun AddNewHabitPage(modifier: Modifier = Modifier) {
-    Text(text = "ADD NEW HABIT")
-
 
     val context = LocalContext.current
     val db = FirebaseFirestore.getInstance()
@@ -77,7 +76,7 @@ fun AddNewHabitPage(modifier: Modifier = Modifier) {
             text = "Give your habit a name",
             fontSize = 15.sp,
             modifier = Modifier.align(Alignment.Start),
-            color = Color.LightGray
+            color = BlackTertiaryText
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -98,7 +97,7 @@ fun AddNewHabitPage(modifier: Modifier = Modifier) {
         Text(text = "Describe your habit",
             fontSize = 15.sp,
             modifier = Modifier.align(Alignment.Start),
-            color = Color.Gray
+            color = BlackTertiaryText
         )
 
         Spacer(modifier = Modifier.height(30.dp))
@@ -128,7 +127,7 @@ fun AddNewHabitPage(modifier: Modifier = Modifier) {
         Text(text = "Pick days when you should keep up this habit",
             fontSize = 15.sp,
             modifier = Modifier.align(Alignment.Start),
-            color = Color.Gray
+            color = BlackTertiaryText
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -177,7 +176,7 @@ fun DaySelector(day: String, isSelected: Boolean, onClick: () -> Unit) {
         modifier = Modifier
             .size(40.dp)
             .background(
-                if (isSelected) Color(0xFF4CAF50) else Color.Gray,
+                if (isSelected) ActiveButtonColor else InactiveButtonColor,
                 shape = RoundedCornerShape(30),
                 )
             .clickable (
@@ -186,7 +185,7 @@ fun DaySelector(day: String, isSelected: Boolean, onClick: () -> Unit) {
             ) { onClick() },
         contentAlignment = Alignment.Center
     ) {
-        Text(text = day, color = Color.White)
+        Text(text = day, color = WhitePrimaryText)
     }
 }
 

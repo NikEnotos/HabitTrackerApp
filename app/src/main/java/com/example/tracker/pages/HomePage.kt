@@ -1,25 +1,36 @@
 package com.example.tracker.pages
 
 
+import android.R.attr.text
 import android.util.Log
+import android.util.Range
 import android.widget.Toast
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.tracker.R
 import com.example.tracker.model.HabitModel
+import com.example.tracker.ui.theme.*
 import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.auth
@@ -46,14 +57,6 @@ fun HomePage(modifier: Modifier = Modifier) {
     // Fetch habits from Firebase
     LaunchedEffect(userId) {
         if (userId != null) {
-//            db.collection("habits")
-//                .document(userId)
-//                .collection("userHabits")
-//                .get()
-//                .addOnCompleteListener(){
-//                    habits = it.result.documents.mapNotNull {  }
-//                }
-
 
             db.collection("habits").document(userId).collection("userHabits")
                 .addSnapshotListener { snapshot, e ->
@@ -84,6 +87,13 @@ fun HomePage(modifier: Modifier = Modifier) {
                     } ?: emptyList()
 
                     isLoading = false
+
+                    // ✅ Check if the habits list is empty
+                    if (habits.isEmpty()) {
+                        Toast.makeText(context, "No habits found.", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(context, "User has ${habits.size} habits.", Toast.LENGTH_SHORT).show()
+                    }
                 }
         }
 
@@ -94,15 +104,50 @@ fun HomePage(modifier: Modifier = Modifier) {
             CircularProgressIndicator()
         }
     } else {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-        ) {
-            items(habits) { habit ->
-                HabitItem(habit, db, userId)
-                Spacer(modifier = Modifier.height(12.dp))
+        if (habits.isEmpty()) {
+            AddNewHabitButton({
+
+            })
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+            ) {
+                items(habits) { habit ->
+                    HabitItem(habit, db, userId)
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
             }
+        }
+    }
+}
+
+@Composable
+fun AddNewHabitButton(onClick: () -> Unit) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center,
+
+    ) {
+        Button(
+            onClick = onClick,
+            colors = ButtonDefaults.buttonColors(containerColor = ActiveButtonColor),
+            contentPadding = PaddingValues(16.dp) // Add padding inside the button
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Add,
+                contentDescription = "Add",
+                tint = WhitePrimaryText,
+                modifier = Modifier.size(28.dp) // Adjust icon size
+            )
+            Spacer(modifier = Modifier.width(8.dp)) // Add space between icon and text
+            Text(
+                text = "Add new habit",
+                color = WhitePrimaryText,
+                fontWeight = FontWeight.Bold,
+                fontSize = 20.sp
+            )
         }
     }
 }
@@ -113,23 +158,18 @@ fun HabitItem(habit: HabitModel, db: FirebaseFirestore, userId: String?) {
 
     // Check if habit is completed today
     val todayIndex = (Timestamp.now().toDate().day + 6) % 7
-    Toast.makeText(context, "Today Index: ${todayIndex.toString()}", Toast.LENGTH_LONG).show()
 
     val today = Timestamp.now().toDate()
     val lastCompletedDate = habit.lastTimeCompleted?.toDate()
     var isCompletedToday = lastCompletedDate!!.date == today.date
     val isForToday = habit.activeDays[todayIndex]
 
-    // Colors
-    val activeDayColor = Color(0xFF4CAF50) // Bright Green
-    //val inactiveDayColor = Color(0xFFBDBDBD) // Subtle Greenish Gray
-    val inactiveDayColor = Color.LightGray // Subtle Greenish Gray
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
-            .background(Color.White, shape = RoundedCornerShape(12.dp)),
+            .background(PrimaryBackground, shape = RoundedCornerShape(12.dp)),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
@@ -146,7 +186,7 @@ fun HabitItem(habit: HabitModel, db: FirebaseFirestore, userId: String?) {
                         text = habit.streak.toString(),
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.Black
+                        color = BlackPrimaryText
                     )
 
                     Icon(
@@ -162,28 +202,25 @@ fun HabitItem(habit: HabitModel, db: FirebaseFirestore, userId: String?) {
                     .weight(1f)) {
                     Row() {
                         // 🏷 Habit Title (Bold)
-                        Text(modifier = Modifier.weight(1f),
+                        Text(
+                            modifier = Modifier.weight(1f),
                             text = habit.habitName,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color.Black,
+                            color = BlackPrimaryText,
                         )
-//                        Button(
-                        Button(
+
+                        IconButton(
                             onClick = {},
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.Gray),
+                            colors = IconButtonDefaults.iconButtonColors(
+                                containerColor = SecondaryButton // Set the button's background color
+                            ),
                             modifier = Modifier.padding(start = 10.dp)
-                                //.align(Alignment.End)
-                            //.size(50.dp)
-                            //.background(Color.Yellow,
-                            //    shape = RoundedCornerShape(50),
-                            //),
-                            //contentAlignment = Alignment.Center
                         ) {
-                            Text(
-                                text = "Edit",
-                                color = Color.White,
-                                fontSize = 14.sp
+                            Icon(
+                                imageVector = Icons.Filled.Edit,
+                                contentDescription = "Edit",
+                                tint = Color.Black // Set the icon's color
                             )
                         }
                     }
@@ -191,65 +228,15 @@ fun HabitItem(habit: HabitModel, db: FirebaseFirestore, userId: String?) {
                     // 📄 Habit Description (Small Text)
                     if (habit.habitDescription.isNotBlank()) {
                         Text(
+                            modifier = Modifier.padding(top = 15.dp),
                             text = habit.habitDescription,
                             fontSize = 14.sp,
-                            color = Color.DarkGray
+                            color = BlackSecondaryText
                         )
                     }
-
-                    //Spacer(modifier = Modifier.height(8.dp))
-
                 }
 
-                // ✅ Mark Habit as Completed Button
-//                Button(
-//                    onClick = {
-//                        if (!isCompletedToday && isForToday) {
-//                            val updatedStreak =
-//                                if (habit.activeDays[todayIndex]) habit.streak + 1 else 0
-//                            val updatedHabit = habit.copy(
-//                                streak = updatedStreak,
-//                                lastTimeCompleted = Timestamp.now()
-//                            )
-//
-//                            userId?.let {
-//                                db.collection("habits")
-//                                    .document(it)
-//                                    .collection("userHabits")
-//                                    .document(habit.habitID)
-//                                    .set(updatedHabit)
-//                                    .addOnSuccessListener {
-//                                        Toast.makeText(
-//                                            context,
-//                                            "Marked as Completed!",
-//                                            Toast.LENGTH_SHORT
-//                                        ).show()
-//                                        isCompletedToday = !isCompletedToday
-//                                    }
-//                                    .addOnFailureListener {
-//                                        Toast.makeText(
-//                                            context,
-//                                            "Failed to update habit!",
-//                                            Toast.LENGTH_SHORT
-//                                        ).show()
-//                                    }
-//                            }
-//                        }
-//                    },
-//                    colors = ButtonDefaults.buttonColors(
-//                        containerColor = if (!isForToday) Color.LightGray else if (isCompletedToday) Color.Green else Color.Gray,
-//                        //disabledContainerColor = if (!isForToday) Color.LightGray else if (isCompletedToday) Color.Green else Color.Gray
-//                    ),
-//                    //modifier = Modifier.width(60.dp),
-//                    //enabled = isForToday && !isCompletedToday,
-//
-//                ) {
-//                    Text(
-//                        text = if (!isForToday) "✘" else if (isCompletedToday) "✔" else "Done?",
-//                        fontSize = 13.sp,
-//                        fontWeight = FontWeight.Black
-//                    )
-//                }
+
             }
             Column(
                 modifier = Modifier
@@ -269,88 +256,122 @@ fun HabitItem(habit: HabitModel, db: FirebaseFirestore, userId: String?) {
                             modifier = Modifier
                                 .size(40.dp)
                                 .background(
-                                    if (habit.activeDays[i]) activeDayColor else inactiveDayColor,
+                                    if (habit.activeDays[i]) ActiveDayColor else InactiveDayColor,
                                     shape = RoundedCornerShape(30),
                                 ),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(
-                                text = days[i],
-                                fontWeight = if (i == todayIndex) FontWeight.ExtraBold else FontWeight.Normal,
-                                color = if (i == todayIndex) Color(0xFFD81B60) else Color.White,
-                                fontSize = 14.sp
-                            )
+                            if(i == todayIndex) {
+                                OutlinedFilledText(
+                                    text = days[i],
+                                    outlineColor = CurrentDayOutlineColor,
+                                    fillColor = WhitePrimaryText,
+                                    fontSize = 14.sp,
+                                )
+                            }
+                            else{
+                                Text(
+                                    text = days[i],
+                                    fontWeight = FontWeight.Normal,
+                                    color = WhitePrimaryText,
+                                    fontSize = 14.sp,
+                                )
+                            }
                         }
                         Spacer(modifier = Modifier.width(4.dp))
                     }
                 }
-//                Button(
-//                    onClick = {},
-//                    colors = ButtonDefaults.buttonColors(containerColor = Color.Gray),
-//                    modifier = Modifier
-//                        .align(Alignment.End)
-//                        //.size(50.dp)
-//                        //.background(Color.Yellow,
-//                        //    shape = RoundedCornerShape(50),
-//                        //),
-//                    //contentAlignment = Alignment.Center
-//                    ){
-//                    Text(
-//                        text = "Edit",
-//                        color = Color.White,
-//                        fontSize = 14.sp
-//                    )
-//                }
-                Button(
-                    onClick = {
-                        if (!isCompletedToday && isForToday) {
-                            val updatedStreak =
-                                if (habit.activeDays[todayIndex]) habit.streak + 1 else 0
-                            val updatedHabit = habit.copy(
-                                streak = updatedStreak,
-                                lastTimeCompleted = Timestamp.now()
-                            )
 
-                            userId?.let {
-                                db.collection("habits")
-                                    .document(it)
-                                    .collection("userHabits")
-                                    .document(habit.habitID)
-                                    .set(updatedHabit)
-                                    .addOnSuccessListener {
-                                        Toast.makeText(
-                                            context,
-                                            "Marked as Completed!",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                        isCompletedToday = !isCompletedToday
-                                    }
-                                    .addOnFailureListener {
-                                        Toast.makeText(
-                                            context,
-                                            "Failed to update habit!",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
+                // ✅ Mark Habit as Completed Button
+                if(isForToday) {
+                    Button(
+                        onClick = {
+                            if (!isCompletedToday && isForToday) {
+                                val updatedStreak =
+                                    if (habit.activeDays[todayIndex]) habit.streak + 1 else 0
+                                val updatedHabit = habit.copy(
+                                    streak = updatedStreak,
+                                    lastTimeCompleted = Timestamp.now()
+                                )
+
+                                userId?.let {
+                                    db.collection("habits")
+                                        .document(it)
+                                        .collection("userHabits")
+                                        .document(habit.habitID)
+                                        .set(updatedHabit)
+                                        .addOnSuccessListener {
+                                            Toast.makeText(
+                                                context,
+                                                "Marked as Completed!",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                            isCompletedToday = !isCompletedToday
+                                        }
+                                        .addOnFailureListener {
+                                            Toast.makeText(
+                                                context,
+                                                "Failed to update habit!",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                }
                             }
-                        }
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (!isForToday) Color.LightGray else if (isCompletedToday) Color.Green else Color.Gray,
-                        //disabledContainerColor = if (!isForToday) Color.LightGray else if (isCompletedToday) Color.Green else Color.Gray
-                    ),
-                    modifier = Modifier.align(Alignment.End),
-                    //enabled = isForToday && !isCompletedToday,
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (isCompletedToday) CompleteButtonColor else IncompleteButtonColor,
+                        ),
+                        modifier = Modifier.align(Alignment.End),
+                        //enabled = isForToday && !isCompletedToday,
 
-                ) {
-                    Text(
-                        text = if (!isForToday) "✘" else if (isCompletedToday) "✔" else "Mark Done?",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Black
-                    )
+                    ) {
+                        Text(
+                            //text = if (!isForToday) "✘" else if (isCompletedToday) "✔" else "Mark Done?",
+                            text = if (isCompletedToday) "✔" else "✘",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Black
+                        )
+                    }
                 }
 
             }
         }
+    }
+}
+
+
+
+@Composable
+fun OutlinedFilledText(
+    text: String,
+    outlineColor: Color,
+    fillColor: Color,
+    fontSize: TextUnit,
+    modifier: Modifier = Modifier
+) {
+    Box(modifier = modifier, contentAlignment = Alignment.Center) {
+        // Outline text (using shadow)
+        Text(
+            text = text,
+            style = TextStyle(
+                fontSize = fontSize,
+                fontWeight = FontWeight.ExtraBold,
+                color = outlineColor,
+                shadow = Shadow(
+                    color = outlineColor,
+                    offset = androidx.compose.ui.geometry.Offset(2.0f, 2.0f),
+                    blurRadius = 5f
+                )
+            )
+        )
+        Text(
+            text = text,
+            style = TextStyle(
+                fontSize = fontSize,
+                fontWeight = FontWeight.Normal,
+                color = fillColor
+            )
+        )
+
     }
 }
