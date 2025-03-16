@@ -55,8 +55,8 @@ fun HomeScreen(modifier: Modifier = Modifier, navController: NavController, auth
                         },
                         colors = NavigationBarItemColors(
                             selectedIndicatorColor = Color.Green,
-                            selectedIconColor = Color.Green,
-                            selectedTextColor = Color.DarkGray,
+                            selectedIconColor = Color.White,
+                            selectedTextColor = Color.White,
                             unselectedIconColor = Color.White,
                             unselectedTextColor = Color.White,
                             disabledIconColor = Color.Yellow,

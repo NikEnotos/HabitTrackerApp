@@ -48,8 +48,8 @@ class AuthViewModel : ViewModel() {
             .addOnCompleteListener { task ->
                 if(task.isSuccessful){
 
-                    var userID = task.result.user?.uid
-                    val userModel = UserModel(email, email, userID!!)
+                    val userID = task.result.user?.uid
+                    val userModel = UserModel(email, userID!!)
 
                     firebase.collection("users")
                         .document(userID)

@@ -3,11 +3,11 @@ package com.example.tracker
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.tracker.screens.HomeScreen
 import com.example.tracker.screens.LogInScreen
 import com.example.tracker.screens.SignUpScreen
-import com.example.tracker.screens.HomeScreen
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 
