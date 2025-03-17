@@ -14,8 +14,10 @@ val IncompleteButtonColor = Color.LightGray
 val InactiveButtonColor = Color.LightGray
 val ActiveButtonColor = PrimaryGreen
 
-val PrimaryButton = Color.LightGray
+val PrimaryButton = PrimaryGreen
 val SecondaryButton = Color.LightGray  // Edit button
+
+val DangerousButton = Color(0xFFE57373)
 
 
 // Text

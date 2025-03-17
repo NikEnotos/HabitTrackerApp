@@ -14,8 +14,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -56,6 +56,7 @@ fun AddNewHabitPage(modifier: Modifier = Modifier) {
 
         Text(text = "Add new habit",
             fontSize = 30.sp,
+            fontWeight = FontWeight.Bold,
             modifier = Modifier.align(Alignment.Start)
         )
 
@@ -65,7 +66,11 @@ fun AddNewHabitPage(modifier: Modifier = Modifier) {
         OutlinedTextField(
             value = habitTitle,
             onValueChange = { habitTitle = it },
-            label = { Text("Habit Title") },
+            label = {
+                Text(
+                    text ="Habit title",
+                    color = BlackTertiaryText
+                )},
             modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )
@@ -86,7 +91,11 @@ fun AddNewHabitPage(modifier: Modifier = Modifier) {
         OutlinedTextField(
             value = habitDescription,
             onValueChange = { habitDescription = it },
-            label = { Text("Habit Description (Optional)") },
+            label = {
+                Text(
+                    text = "Habit description (optional)",
+                    color = BlackTertiaryText
+                )},
             modifier = Modifier.fillMaxWidth(),
             minLines = 4,
             maxLines = 5
@@ -157,6 +166,11 @@ fun AddNewHabitPage(modifier: Modifier = Modifier) {
                     .set(habit)
                     .addOnSuccessListener {
                         Toast.makeText(context, "Habit Added!", Toast.LENGTH_SHORT).show()
+
+                        // Return page to the default state
+                        habitTitle = TextFieldValue("")
+                        habitDescription = TextFieldValue("")
+                        selectedDays = List(7) { true }
                     }
                     .addOnFailureListener { e ->
                         Toast.makeText(context, "Failed: ${e.message}", Toast.LENGTH_SHORT).show()

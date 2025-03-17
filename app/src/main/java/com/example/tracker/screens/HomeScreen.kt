@@ -24,6 +24,7 @@ import com.example.tracker.AuthViewModel
 import com.example.tracker.pages.AddNewHabitPage
 import com.example.tracker.pages.HomePage
 import com.example.tracker.pages.UserProfilePage
+import com.example.tracker.ui.theme.*
 
 @Composable
 fun HomeScreen(modifier: Modifier = Modifier, navController: NavController, authViewModel: AuthViewModel) {
@@ -54,7 +55,7 @@ fun HomeScreen(modifier: Modifier = Modifier, navController: NavController, auth
                             Text(text = navItem.label)
                         },
                         colors = NavigationBarItemColors(
-                            selectedIndicatorColor = Color.Green,
+                            selectedIndicatorColor = PrimaryGreen,
                             selectedIconColor = Color.White,
                             selectedTextColor = Color.White,
                             unselectedIconColor = Color.White,
@@ -76,7 +77,7 @@ fun HomeScreen(modifier: Modifier = Modifier, navController: NavController, auth
 fun ContentScreen(modifier: Modifier = Modifier, navController: NavController, authViewModel: AuthViewModel, selectedIndex: Int){
 
     when(selectedIndex){
-        0 -> HomePage(modifier)
+        0 -> HomePage(modifier, navController)
         1 -> AddNewHabitPage(modifier)
         2 -> UserProfilePage(modifier = modifier, navController, authViewModel)
     }

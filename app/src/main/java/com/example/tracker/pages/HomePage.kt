@@ -1,11 +1,8 @@
 package com.example.tracker.pages
 
 
-import android.R.attr.text
 import android.util.Log
-import android.util.Range
 import android.widget.Toast
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -28,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.tracker.R
 import com.example.tracker.model.HabitModel
 import com.example.tracker.ui.theme.*
@@ -39,15 +37,19 @@ import com.google.firebase.firestore.firestore
 
 
 @Composable
-fun HomePage(modifier: Modifier = Modifier) {
+fun HomePage(modifier: Modifier = Modifier, navController: NavController) {
 
     val context = LocalContext.current
     val db = Firebase.firestore
     val userId = Firebase.auth.currentUser?.uid
     val user = Firebase.auth.currentUser
 
-    var habits by remember { mutableStateOf<List<HabitModel>>(emptyList()) }
-    var isLoading by remember { mutableStateOf(true) }
+    var habits by remember {
+        mutableStateOf<List<HabitModel>>(emptyList())
+    }
+    var isLoading by remember {
+        mutableStateOf(true)
+    }
 
     if (user == null) {
         Toast.makeText(context, "User not logged in!", Toast.LENGTH_SHORT).show()
@@ -88,12 +90,6 @@ fun HomePage(modifier: Modifier = Modifier) {
 
                     isLoading = false
 
-                    // ✅ Check if the habits list is empty
-                    if (habits.isEmpty()) {
-                        Toast.makeText(context, "No habits found.", Toast.LENGTH_SHORT).show()
-                    } else {
-                        Toast.makeText(context, "User has ${habits.size} habits.", Toast.LENGTH_SHORT).show()
-                    }
                 }
         }
 
@@ -105,9 +101,7 @@ fun HomePage(modifier: Modifier = Modifier) {
         }
     } else {
         if (habits.isEmpty()) {
-            AddNewHabitButton({
-
-            })
+            // AddNewHabitButton({ })  // TODO find a way to switch to AddNewHabitPage
         } else {
             LazyColumn(
                 modifier = Modifier
@@ -115,7 +109,7 @@ fun HomePage(modifier: Modifier = Modifier) {
                     .padding(16.dp)
             ) {
                 items(habits) { habit ->
-                    HabitItem(habit, db, userId)
+                    HabitItem(habit, db, userId, navController)
                     Spacer(modifier = Modifier.height(12.dp))
                 }
             }
@@ -153,7 +147,7 @@ fun AddNewHabitButton(onClick: () -> Unit) {
 }
 
 @Composable
-fun HabitItem(habit: HabitModel, db: FirebaseFirestore, userId: String?) {
+fun HabitItem(habit: HabitModel, db: FirebaseFirestore, userId: String?, navController: NavController) {
     val context = LocalContext.current
 
     // Check if habit is completed today
@@ -201,7 +195,7 @@ fun HabitItem(habit: HabitModel, db: FirebaseFirestore, userId: String?) {
                     //.padding(end = 10.dp)
                     .weight(1f)) {
                     Row() {
-                        // 🏷 Habit Title (Bold)
+                        // 📰 Habit Title (Bold)
                         Text(
                             modifier = Modifier.weight(1f),
                             text = habit.habitName,
@@ -209,9 +203,11 @@ fun HabitItem(habit: HabitModel, db: FirebaseFirestore, userId: String?) {
                             fontWeight = FontWeight.Bold,
                             color = BlackPrimaryText,
                         )
-
+                        // ✏️ Edit button
                         IconButton(
-                            onClick = {},
+                            onClick = {
+                                navController.navigate("editHabit/${habit.habitID}")
+                            },
                             colors = IconButtonDefaults.iconButtonColors(
                                 containerColor = SecondaryButton // Set the button's background color
                             ),
@@ -286,7 +282,7 @@ fun HabitItem(habit: HabitModel, db: FirebaseFirestore, userId: String?) {
                 if(isForToday) {
                     Button(
                         onClick = {
-                            if (!isCompletedToday && isForToday) {
+                            if (!isCompletedToday) {
                                 val updatedStreak =
                                     if (habit.activeDays[todayIndex]) habit.streak + 1 else 0
                                 val updatedHabit = habit.copy(
@@ -301,19 +297,11 @@ fun HabitItem(habit: HabitModel, db: FirebaseFirestore, userId: String?) {
                                         .document(habit.habitID)
                                         .set(updatedHabit)
                                         .addOnSuccessListener {
-                                            Toast.makeText(
-                                                context,
-                                                "Marked as Completed!",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-                                            isCompletedToday = !isCompletedToday
+                                            Toast.makeText(context, "Marked as Completed!", Toast.LENGTH_SHORT).show()
+                                            isCompletedToday = true
                                         }
                                         .addOnFailureListener {
-                                            Toast.makeText(
-                                                context,
-                                                "Failed to update habit!",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
+                                            Toast.makeText(context, "Failed to update habit!", Toast.LENGTH_SHORT).show()
                                         }
                                 }
                             }
@@ -322,8 +310,6 @@ fun HabitItem(habit: HabitModel, db: FirebaseFirestore, userId: String?) {
                             containerColor = if (isCompletedToday) CompleteButtonColor else IncompleteButtonColor,
                         ),
                         modifier = Modifier.align(Alignment.End),
-                        //enabled = isForToday && !isCompletedToday,
-
                     ) {
                         Text(
                             //text = if (!isForToday) "✘" else if (isCompletedToday) "✔" else "Mark Done?",
@@ -359,8 +345,8 @@ fun OutlinedFilledText(
                 color = outlineColor,
                 shadow = Shadow(
                     color = outlineColor,
-                    offset = androidx.compose.ui.geometry.Offset(2.0f, 2.0f),
-                    blurRadius = 5f
+                    offset = Offset(2.0f, 2.0f),
+                    blurRadius = 7f
                 )
             )
         )
@@ -375,3 +361,4 @@ fun OutlinedFilledText(
 
     }
 }
+
