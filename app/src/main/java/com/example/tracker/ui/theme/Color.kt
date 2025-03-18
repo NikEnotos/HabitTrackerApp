@@ -35,4 +35,5 @@ val PrimaryBackground = Color.White
 // Days
 val ActiveDayColor = SecondaryGreen
 val InactiveDayColor = Color.LightGray
-val CurrentDayOutlineColor = Color(0xFFFF7043)
+val CurrentDayPointerColor = Color(0xFFE57373)
+val NotCurrentDayPointerColor = Color(0x00000000)

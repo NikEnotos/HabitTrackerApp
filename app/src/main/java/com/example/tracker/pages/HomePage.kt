@@ -11,6 +11,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -73,10 +75,13 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController) {
                     habits = snapshot?.documents?.mapNotNull { document ->
                         val habitID = document.getString("habitID") ?: return@mapNotNull null
                         val habitName = document.getString("habitName") ?: return@mapNotNull null
-                        val habitDescription = document.getString("habitDescription") ?: return@mapNotNull null
+                        val habitDescription =
+                            document.getString("habitDescription") ?: return@mapNotNull null
                         val streak = document.getLong("streak")?.toInt() ?: 0
-                        val lastTimeCompleted = document.getTimestamp("lastTimeCompleted") ?: Timestamp.now()
-                        val activeDays = document.get("activeDays") as? List<Boolean> ?: List(7) { false }
+                        val lastTimeCompleted =
+                            document.getTimestamp("lastTimeCompleted") ?: Timestamp.now()
+                        val activeDays =
+                            document.get("activeDays") as? List<Boolean> ?: List(7) { false }
 
                         HabitModel(
                             habitID = habitID,
@@ -106,7 +111,7 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController) {
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp)
+                    .padding(start = 16.dp, end = 16.dp, top = 30.dp, bottom = 80.dp)
             ) {
                 items(habits) { habit ->
                     HabitItem(habit, db, userId, navController)
@@ -123,7 +128,7 @@ fun AddNewHabitButton(onClick: () -> Unit) {
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center,
 
-    ) {
+        ) {
         Button(
             onClick = onClick,
             colors = ButtonDefaults.buttonColors(containerColor = ActiveButtonColor),
@@ -147,7 +152,12 @@ fun AddNewHabitButton(onClick: () -> Unit) {
 }
 
 @Composable
-fun HabitItem(habit: HabitModel, db: FirebaseFirestore, userId: String?, navController: NavController) {
+fun HabitItem(
+    habit: HabitModel,
+    db: FirebaseFirestore,
+    userId: String?,
+    navController: NavController
+) {
     val context = LocalContext.current
 
     // Check if habit is completed today
@@ -191,13 +201,15 @@ fun HabitItem(habit: HabitModel, db: FirebaseFirestore, userId: String?, navCont
                     )
                 }
 
-                Column(modifier = Modifier
-                    //.padding(end = 10.dp)
-                    .weight(1f)) {
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
                     Row() {
                         // 📰 Habit Title (Bold)
                         Text(
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier
+                                .weight(1f)
+                                .align(Alignment.CenterVertically),
                             text = habit.habitName,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
@@ -239,12 +251,29 @@ fun HabitItem(habit: HabitModel, db: FirebaseFirestore, userId: String?, navCont
                     .padding(16.dp)
                     .fillMaxWidth(),
             ) {
+                // 🔻 Current day
+                    Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    for (i in 0..6) {
+                        Box(
+                            modifier = Modifier.size(width = 40.dp, height = 20.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.KeyboardArrowDown,
+                                contentDescription = "Current day pointer",
+                                tint = if (i == todayIndex) CurrentDayPointerColor else NotCurrentDayPointerColor
+                            )
+                        }
+                    }
+                }
                 // 📅 Days of the Week
                 Row(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp),
-                    horizontalArrangement = Arrangement.Center
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     val days = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
                     for (i in days.indices) {
@@ -257,29 +286,36 @@ fun HabitItem(habit: HabitModel, db: FirebaseFirestore, userId: String?, navCont
                                 ),
                             contentAlignment = Alignment.Center
                         ) {
-                            if(i == todayIndex) {
-                                OutlinedFilledText(
-                                    text = days[i],
-                                    outlineColor = CurrentDayOutlineColor,
-                                    fillColor = WhitePrimaryText,
-                                    fontSize = 14.sp,
-                                )
-                            }
-                            else{
-                                Text(
-                                    text = days[i],
-                                    fontWeight = FontWeight.Normal,
-                                    color = WhitePrimaryText,
-                                    fontSize = 14.sp,
-                                )
-                            }
+                            Text(
+                                text = days[i],
+                                fontWeight = FontWeight.Normal,
+                                color = WhitePrimaryText,
+                                fontSize = 14.sp,
+                            )
                         }
-                        Spacer(modifier = Modifier.width(4.dp))
+                    }
+                }
+                // 🔺 Current day
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    for (i in 0..6) {
+                        Box(
+                            modifier = Modifier.size(width = 40.dp, height = 20.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.KeyboardArrowUp,
+                                contentDescription = "Current day pointer",
+                                tint = if (i == todayIndex) CurrentDayPointerColor else NotCurrentDayPointerColor
+                            )
+                        }
                     }
                 }
 
                 // ✅ Mark Habit as Completed Button
-                if(isForToday) {
+                if (isForToday) {
                     Button(
                         onClick = {
                             if (!isCompletedToday) {
@@ -297,11 +333,19 @@ fun HabitItem(habit: HabitModel, db: FirebaseFirestore, userId: String?, navCont
                                         .document(habit.habitID)
                                         .set(updatedHabit)
                                         .addOnSuccessListener {
-                                            Toast.makeText(context, "Marked as Completed!", Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(
+                                                context,
+                                                "Marked as Completed!",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
                                             isCompletedToday = true
                                         }
                                         .addOnFailureListener {
-                                            Toast.makeText(context, "Failed to update habit!", Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(
+                                                context,
+                                                "Failed to update habit!",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
                                         }
                                 }
                             }
@@ -324,7 +368,6 @@ fun HabitItem(habit: HabitModel, db: FirebaseFirestore, userId: String?, navCont
         }
     }
 }
-
 
 
 @Composable
