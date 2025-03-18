@@ -27,6 +27,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -46,14 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.tracker.model.HabitModel
-import com.example.tracker.ui.theme.ActiveButtonColor
-import com.example.tracker.ui.theme.BlackTertiaryText
 import com.example.tracker.ui.theme.DangerousButton
-import com.example.tracker.ui.theme.InactiveButtonColor
-import com.example.tracker.ui.theme.PrimaryBackground
-import com.example.tracker.ui.theme.PrimaryButton
-import com.example.tracker.ui.theme.SecondaryButton
-import com.example.tracker.ui.theme.WhitePrimaryText
 import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.auth
@@ -158,8 +152,8 @@ fun EditHabitScreen(modifier: Modifier = Modifier, navController: NavController,
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(8.dp)
-                        .background(PrimaryBackground, shape = RoundedCornerShape(12.dp)),
+                        .padding(8.dp),
+                        //.background(PrimaryBackground, shape = RoundedCornerShape(12.dp)),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                 ) {
                     Column(
@@ -225,7 +219,7 @@ fun EditHabitScreen(modifier: Modifier = Modifier, navController: NavController,
                             label = {
                                 Text(
                                     text = "Habit title",
-                                    color = BlackTertiaryText,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
                                     fontWeight = FontWeight.Bold
                                 )
                             },
@@ -246,7 +240,7 @@ fun EditHabitScreen(modifier: Modifier = Modifier, navController: NavController,
                             label = {
                                 Text(
                                     text = "Habit description (optional)",
-                                    color = BlackTertiaryText
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer
                                 )
                             },
                             value = habitDescriptionFieldValue,
@@ -298,7 +292,7 @@ fun EditHabitScreen(modifier: Modifier = Modifier, navController: NavController,
 
                     // Cancel button
                     Button(
-                        colors = ButtonDefaults.buttonColors(containerColor = SecondaryButton),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
                         onClick = {
                             navController.popBackStack()
                         },
@@ -306,7 +300,8 @@ fun EditHabitScreen(modifier: Modifier = Modifier, navController: NavController,
                         ) {
                         Text(
                             text = "Cancel",
-                            fontSize = 20.sp
+                            fontSize = 20.sp,
+                            color = MaterialTheme.colorScheme.onPrimary
                         )
                     }
 
@@ -314,7 +309,7 @@ fun EditHabitScreen(modifier: Modifier = Modifier, navController: NavController,
 
                     // Update button
                     Button(
-                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryButton),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                         onClick = {
                             if (habitTitleFieldValue.text.isBlank()) {
                                 Toast.makeText(
@@ -366,7 +361,8 @@ fun EditHabitScreen(modifier: Modifier = Modifier, navController: NavController,
                     ) {
                         Text(
                             text = "Update",
-                            fontSize = 20.sp
+                            fontSize = 20.sp,
+                            color = Color.White
                         )
                     }
 
@@ -384,7 +380,7 @@ fun DaySelector(day: String, isSelected: Boolean, onClick: () -> Unit) {
         modifier = Modifier
             .size(40.dp)
             .background(
-                if (isSelected) ActiveButtonColor else InactiveButtonColor,
+                if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary,
                 shape = RoundedCornerShape(30),
             )
             .clickable(
@@ -393,7 +389,7 @@ fun DaySelector(day: String, isSelected: Boolean, onClick: () -> Unit) {
             ) { onClick() },
         contentAlignment = Alignment.Center
     ) {
-        Text(text = day, color = WhitePrimaryText)
+        Text(text = day, color = MaterialTheme.colorScheme.onTertiary)
     }
 }
 

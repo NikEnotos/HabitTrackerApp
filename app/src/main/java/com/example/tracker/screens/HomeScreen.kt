@@ -8,6 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemColors
@@ -25,7 +26,6 @@ import com.example.tracker.AuthViewModel
 import com.example.tracker.pages.AddNewHabitPage
 import com.example.tracker.pages.HomePage
 import com.example.tracker.pages.UserProfilePage
-import com.example.tracker.ui.theme.*
 
 @Composable
 fun HomeScreen(modifier: Modifier = Modifier, navController: NavController, authViewModel: AuthViewModel) {
@@ -56,7 +56,7 @@ fun HomeScreen(modifier: Modifier = Modifier, navController: NavController, auth
                             Text(text = navItem.label)
                         },
                         colors = NavigationBarItemColors(
-                            selectedIndicatorColor = PrimaryGreen,
+                            selectedIndicatorColor = MaterialTheme.colorScheme.primary,
                             selectedIconColor = Color.White,
                             selectedTextColor = Color.White,
                             unselectedIconColor = Color.White,

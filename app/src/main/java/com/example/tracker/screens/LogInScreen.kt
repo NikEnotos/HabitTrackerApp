@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -29,7 +30,11 @@ import com.example.tracker.AuthViewModel
 import com.example.tracker.R
 
 @Composable
-fun LogInScreen(modifier: Modifier = Modifier, navController: NavController, authViewModel: AuthViewModel) {
+fun LogInScreen(
+    modifier: Modifier = Modifier,
+    navController: NavController,
+    authViewModel: AuthViewModel
+) {
 
 
     var email by remember {
@@ -81,23 +86,27 @@ fun LogInScreen(modifier: Modifier = Modifier, navController: NavController, aut
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Button(onClick = {
-            isLoading = true
-            authViewModel.login(email, password){success, errorMessage->
-                if(success){
-                    isLoading = false
-                    navController.navigate("home"){
-                        popUpTo("login"){inclusive = true}
+        Button(
+            onClick = {
+                isLoading = true
+                authViewModel.login(email, password) { success, errorMessage ->
+                    if (success) {
+                        isLoading = false
+                        navController.navigate("home") {
+                            popUpTo("login") { inclusive = true }
+                        }
+                    } else {
+                        isLoading = false
+                        Toast.makeText(
+                            context,
+                            errorMessage ?: "Something went wrong",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
-                }
-                else{
-                    isLoading = false
-                    Toast.makeText(context, errorMessage?:"Something went wrong", Toast.LENGTH_SHORT).show()
-                }
 
-            }
-        },
-            enabled = email.isNotBlank() && password.isNotBlank() && !isLoading
+                }
+            },
+            enabled = email.isNotBlank() && password.isNotBlank() && !isLoading,
         ) {
             Text("Log In")
         }
@@ -108,7 +117,10 @@ fun LogInScreen(modifier: Modifier = Modifier, navController: NavController, aut
             navController.navigate("signup")
         })
         {
-            Text("Don't have an account? Sign Up")
+            Text(
+                text = "Don't have an account? Sign Up",
+                color = MaterialTheme.colorScheme.primary
+            )
         }
 
     }

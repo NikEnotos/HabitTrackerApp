@@ -14,13 +14,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.tracker.model.HabitModel
-import com.example.tracker.ui.theme.*
 import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.auth
@@ -69,7 +69,7 @@ fun AddNewHabitPage(modifier: Modifier = Modifier) {
             label = {
                 Text(
                     text ="Habit title",
-                    color = BlackTertiaryText
+                    color = MaterialTheme.colorScheme.onSecondaryContainer
                 )},
             modifier = Modifier.fillMaxWidth(),
             singleLine = true
@@ -81,7 +81,7 @@ fun AddNewHabitPage(modifier: Modifier = Modifier) {
             text = "Give your habit a name",
             fontSize = 15.sp,
             modifier = Modifier.align(Alignment.Start),
-            color = BlackTertiaryText
+            color = MaterialTheme.colorScheme.onSecondaryContainer
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -94,7 +94,7 @@ fun AddNewHabitPage(modifier: Modifier = Modifier) {
             label = {
                 Text(
                     text = "Habit description (optional)",
-                    color = BlackTertiaryText
+                    color = MaterialTheme.colorScheme.onSecondaryContainer
                 )},
             modifier = Modifier.fillMaxWidth(),
             minLines = 4,
@@ -106,7 +106,7 @@ fun AddNewHabitPage(modifier: Modifier = Modifier) {
         Text(text = "Describe your habit",
             fontSize = 15.sp,
             modifier = Modifier.align(Alignment.Start),
-            color = BlackTertiaryText
+            color = MaterialTheme.colorScheme.onSecondaryContainer
         )
 
         Spacer(modifier = Modifier.height(30.dp))
@@ -136,7 +136,7 @@ fun AddNewHabitPage(modifier: Modifier = Modifier) {
         Text(text = "Pick days when you should keep up this habit",
             fontSize = 15.sp,
             modifier = Modifier.align(Alignment.Start),
-            color = BlackTertiaryText
+            color = MaterialTheme.colorScheme.onSecondaryContainer
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -146,6 +146,10 @@ fun AddNewHabitPage(modifier: Modifier = Modifier) {
             onClick = {
                 if (habitTitle.text.isBlank()) {
                     Toast.makeText(context, "Habit Title is required!", Toast.LENGTH_SHORT).show()
+                    return@Button
+                }
+                if (selectedDays == List(7) { false }) {
+                    Toast.makeText(context, "You have to pick at least one day", Toast.LENGTH_SHORT).show()
                     return@Button
                 }
 
@@ -178,7 +182,10 @@ fun AddNewHabitPage(modifier: Modifier = Modifier) {
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Save Habit")
+            Text(
+                text = "Save Habit",
+                color = Color.White
+                )
         }
     }
 }
@@ -190,7 +197,7 @@ fun DaySelector(day: String, isSelected: Boolean, onClick: () -> Unit) {
         modifier = Modifier
             .size(40.dp)
             .background(
-                if (isSelected) ActiveButtonColor else InactiveButtonColor,
+                if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary,
                 shape = RoundedCornerShape(30),
             )
             .clickable(
@@ -200,7 +207,11 @@ fun DaySelector(day: String, isSelected: Boolean, onClick: () -> Unit) {
         contentAlignment = Alignment.Center,
 
     ) {
-        Text(text = day, color = WhitePrimaryText)
+        Text(
+            text = day,
+            color = MaterialTheme.colorScheme.onTertiary,
+            fontWeight = FontWeight.Normal
+            )
     }
 }
 

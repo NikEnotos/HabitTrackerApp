@@ -262,19 +262,19 @@ fun AddNewHabitButton(onClick: () -> Unit) {
         ) {
         Button(
             onClick = onClick,
-            colors = ButtonDefaults.buttonColors(containerColor = ActiveButtonColor),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
             contentPadding = PaddingValues(16.dp) // Add padding inside the button
         ) {
             Icon(
                 imageVector = Icons.Filled.Add,
                 contentDescription = "Add",
-                tint = WhitePrimaryText,
+                tint = MaterialTheme.colorScheme.onTertiary,
                 modifier = Modifier.size(28.dp) // Adjust icon size
             )
             Spacer(modifier = Modifier.width(8.dp)) // Add space between icon and text
             Text(
                 text = "Add new habit",
-                color = WhitePrimaryText,
+                color = MaterialTheme.colorScheme.onTertiary,
                 fontWeight = FontWeight.Bold,
                 fontSize = 20.sp
             )
@@ -303,14 +303,14 @@ fun HabitItem(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp, horizontal = 24.dp)
-            .background(
-                PrimaryBackground,
-                shape = RoundedCornerShape(12.dp)
-            ),
-//        colors = CardDefaults.cardColors(
-//            containerColor = if(isCompletedToday) tertiaryGreen else MaterialTheme.colorScheme.surfaceVariant,
-//        ),
+            .padding(vertical = 8.dp, horizontal = 24.dp),
+//            .background(
+//                color = Color.Black,
+//                shape = RoundedCornerShape(12.dp)
+//            ),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+        ),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
@@ -327,7 +327,7 @@ fun HabitItem(
                         text = habit.streak.toString(),
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
-                        color = BlackPrimaryText
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
 
                     Icon(
@@ -335,7 +335,7 @@ fun HabitItem(
                         contentDescription = "Streak Flame",
                         modifier = Modifier.size(32.dp),
                         //tint = if (habit.streak > 0) Color.Unspecified else InactiveDayColor // Keep original icon colors
-                        tint = if (!isCompletedToday && isForToday) InactiveDayColor else Color.Unspecified// Keep original icon colors
+                        tint = if (!isCompletedToday && isForToday) MaterialTheme.colorScheme.secondary else Color.Unspecified// Keep original icon colors
                     )
                 }
 
@@ -351,7 +351,7 @@ fun HabitItem(
                             text = habit.habitName,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
-                            color = BlackPrimaryText,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
                         )
                         // ✏️ Edit button
                         IconButton(
@@ -359,14 +359,14 @@ fun HabitItem(
                                 navController.navigate("editHabit/${habit.habitID}")
                             },
                             colors = IconButtonDefaults.iconButtonColors(
-                                containerColor = SecondaryButton // Set the button's background color
+                                containerColor = MaterialTheme.colorScheme.secondary // Set the button's background color
                             ),
                             modifier = Modifier.padding(start = 10.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.Edit,
                                 contentDescription = "Edit",
-                                tint = Color.Black // Set the icon's color
+                                tint = MaterialTheme.colorScheme.onSecondary // Set the icon's color
                             )
                         }
                     }
@@ -377,7 +377,7 @@ fun HabitItem(
                             modifier = Modifier.padding(top = 15.dp),
                             text = habit.habitDescription,
                             fontSize = 14.sp,
-                            color = BlackSecondaryText
+                            color = MaterialTheme.colorScheme.onSecondaryContainer
                         )
                     }
                 }
@@ -419,7 +419,7 @@ fun HabitItem(
                             modifier = Modifier
                                 .size(40.dp)
                                 .background(
-                                    if (habit.activeDays[i]) ActiveDayColor else InactiveDayColor,
+                                    if (habit.activeDays[i]) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary,
                                     shape = RoundedCornerShape(30),
                                 ),
                             contentAlignment = Alignment.Center
@@ -435,7 +435,7 @@ fun HabitItem(
                             Text(
                                 text = days[i],
                                 fontWeight = FontWeight.Normal,
-                                color = WhitePrimaryText,
+                                color = MaterialTheme.colorScheme.onTertiary,
                                 fontSize = 14.sp,
                             )
 //                            }
@@ -502,7 +502,7 @@ fun HabitItem(
                             },
                             colors = ButtonDefaults.buttonColors(
                                 //containerColor = if (isCompletedToday) CompleteButtonColor else IncompleteButtonColor,
-                                containerColor = IncompleteButtonColor,
+                                containerColor = MaterialTheme.colorScheme.primary,
                             ),
                             modifier = Modifier.align(Alignment.End),
                         ) {
@@ -526,7 +526,7 @@ fun HabitItem(
                                 painter = painterResource(id = R.drawable.checkmark),
                                 contentDescription = "Check mark",
                                 modifier = Modifier.fillMaxSize(),
-                                tint = PrimaryGreen
+                                tint = MaterialTheme.colorScheme.primary
                             )
                         }
                     }

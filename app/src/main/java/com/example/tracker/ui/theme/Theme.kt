@@ -1,6 +1,5 @@
 package com.example.tracker.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -9,28 +8,53 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
-private val DarkColorScheme = darkColorScheme(
-    primary = PrimaryGreen,
-    secondary = SecondaryGreen,
-    tertiary = tertiaryGreen
-)
+
 
 private val LightColorScheme = lightColorScheme(
-    primary = PrimaryGreen,
-    secondary = SecondaryGreen,
-    tertiary = tertiaryGreen
+    primary = Color(0xFF4CAF50),            // Bright green for buttons, active elements
+    onPrimary = Color.White,                      // White text on top of the primary color
 
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
+    primaryContainer = Color(0xFFE7E7E7),   // Soft green for cards, surfaces, etc.
+    onPrimaryContainer = Color.Black, // Dark green text/icons on primaryContainer
+    onSecondaryContainer = Color.Gray,
+
+    secondary = Color(0xFFD3D3D3), // Light gray for background and secondary elements
+    onSecondary = Color.Black, // Text color on secondary elements
     onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+
+    background = Color.White, // Main background color
+    onBackground = Color.Black, // Text color on background
+
+    surface = Color.White, // Surface color for cards and dialogs
+    onSurface = Color.Black, // Text color on surface
+
+    error = Color(0xFFB00020), // Error color
+    onError = Color.White, // Text color on error
+)
+
+private val DarkColorScheme = darkColorScheme(
+    primary = Color(0xFF66BB6A),           // Softer green for buttons, active elements
+    onPrimary = Color(0xFF444444),                     // Dark text/icons on primary for better contrast
+
+    primaryContainer = Color(0xFF626262),  // Deeper green background for cards, sheets, etc.
+    onPrimaryContainer = Color.White,            // White text/icons on primaryContainer
+    onSecondaryContainer = Color.LightGray,
+
+    secondary = Color(0xFF565656), // Darker gray for background and secondary elements
+    onSecondary = Color.White, // Text color on secondary elements
+    onTertiary = Color(0xFFEFEFEF),
+
+    background = Color(0xFF121212), // Dark background color
+    onBackground = Color.White, // Text color on background
+
+    surface = Color(0xFF1E1E1E), // Darker surface color
+    onSurface = Color.White, // Text color on surface
+
+    error = Color(0xFFCF6679), // Error color
+    onError = Color.Black, // Text color on error
 )
 
 @Composable
