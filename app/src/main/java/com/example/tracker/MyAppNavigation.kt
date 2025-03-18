@@ -22,7 +22,6 @@ fun MyAppNavigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel)
     val firstPage = if (isLoggedIn) "home" else "login"
 
     NavHost(navController = navController, startDestination = firstPage) {
-        //NavHost(navController = navController, startDestination = firstPage)
         composable(route = "login") {
             LogInScreen(modifier, navController, authViewModel)
         }

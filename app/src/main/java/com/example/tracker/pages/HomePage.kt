@@ -30,12 +30,15 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.tracker.R
 import com.example.tracker.model.HabitModel
+import com.example.tracker.model.HabitUpdateResult
 import com.example.tracker.ui.theme.*
 import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
+import java.util.Calendar
+import java.util.concurrent.TimeUnit
 
 
 @Composable
@@ -83,7 +86,7 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController) {
                         val activeDays =
                             document.get("activeDays") as? List<Boolean> ?: List(7) { false }
 
-                        HabitModel(
+                        val habit = HabitModel(
                             habitID = habitID,
                             habitName = habitName,
                             habitDescription = habitDescription,
@@ -91,6 +94,34 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController) {
                             lastTimeCompleted = lastTimeCompleted,
                             activeDays = activeDays
                         )
+
+
+                        val checkedHabit = checkMissedDays(habit, userId) { isUpdated ->
+                            if(habit.streak != 0)
+                            if (isUpdated === HabitUpdateResult.SUCCESS) {
+                                Toast.makeText(
+                                    context,
+                                    "${habit.habitName} - streak is reset to 0",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                            else if (isUpdated === HabitUpdateResult.FAILURE) {
+                                Toast.makeText(
+                                    context,
+                                    "Failed to update streak in ${habit.habitName}",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+//                            else if (isUpdated === HabitUpdateResult.NO_UPDATE_NEEDED) {
+//                                Toast.makeText(
+//                                    context,
+//                                    "YOU DIDN'T MISS ${habit.habitName}",  // TODO DELETE
+//                                    Toast.LENGTH_SHORT
+//                                ).show()
+//                            }
+                        }
+
+                        checkedHabit
                     } ?: emptyList()
 
                     isLoading = false
@@ -121,6 +152,73 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController) {
         }
     }
 }
+
+fun checkMissedDays(habit: HabitModel, userId: String, isUpdated: (HabitUpdateResult) -> Unit): HabitModel {
+
+
+    val lastActivityTimestamp = habit.lastTimeCompleted
+    val currentTimestamp = Timestamp.now()
+
+    val diffInMillies = currentTimestamp.toDate().time - lastActivityTimestamp.toDate().time
+    val diffInDays = TimeUnit.MILLISECONDS.toDays(diffInMillies).toInt()
+
+    if (diffInDays > 7) {
+        return resetStreak(habit, userId){ updateResult -> isUpdated(updateResult)}
+    }
+
+    // Calculate the difference in days between lastActivity and current
+    val lastActivityDaysSinceEpoch = TimeUnit.MILLISECONDS.toDays(lastActivityTimestamp.toDate().time)
+    val currentDaysSinceEpoch = TimeUnit.MILLISECONDS.toDays(currentTimestamp.toDate().time)
+
+    // Iterate through each day between lastActivity and current
+    for (daysSinceEpoch in (lastActivityDaysSinceEpoch + 1) until currentDaysSinceEpoch) {
+        val currentIterationTimestamp = Timestamp(java.util.Date(TimeUnit.DAYS.toMillis(daysSinceEpoch)))
+        val dayOfWeek = getDayOfWeek(currentIterationTimestamp)
+
+        //if (habit.activeDays[dayOfWeek] && !isSameDay(currentIterationTimestamp, lastActivityTimestamp) && !isSameDay(currentIterationTimestamp, currentTimestamp)) {
+        if (habit.activeDays[dayOfWeek] && !isSameDay(currentIterationTimestamp, currentTimestamp)) {
+
+            return resetStreak(habit, userId){ updateResult -> isUpdated(updateResult)}
+        }
+    }
+
+    isUpdated(HabitUpdateResult.NO_UPDATE_NEEDED)
+    return habit
+}
+
+private fun getDayOfWeek(timestamp: Timestamp): Int {
+    val calendar = Calendar.getInstance().apply { time = timestamp.toDate() }
+    val dayIndex = (calendar.get(Calendar.DAY_OF_WEEK) + 5) % 7
+    return dayIndex
+}
+
+private fun isSameDay(timestamp1: Timestamp, timestamp2: Timestamp): Boolean {
+    val days1 = TimeUnit.MILLISECONDS.toDays(timestamp1.toDate().time)
+    val days2 = TimeUnit.MILLISECONDS.toDays(timestamp2.toDate().time)
+    return days1 == days2
+}
+
+private fun resetStreak(habit: HabitModel, userId: String, isUpdated: (HabitUpdateResult) -> Unit): HabitModel{
+
+    val updatedHabit = habit.copy(streak = 0)
+
+    Log.w("Reset STREAK", "Updating: ${habit.habitName} with ID '${habit.habitID}' to ${updatedHabit}")
+
+    Firebase.firestore.collection("habits")
+        .document(userId)
+        .collection("userHabits")
+        .document(habit.habitID)
+        .set(updatedHabit)
+        .addOnSuccessListener {
+            isUpdated(HabitUpdateResult.SUCCESS)
+        }
+        .addOnFailureListener {
+            isUpdated(HabitUpdateResult.FAILURE)
+        }
+
+    return updatedHabit
+}
+
 
 @Composable
 fun AddNewHabitButton(onClick: () -> Unit) {
@@ -164,8 +262,8 @@ fun HabitItem(
     val todayIndex = (Timestamp.now().toDate().day + 6) % 7
 
     val today = Timestamp.now().toDate()
-    val lastCompletedDate = habit.lastTimeCompleted?.toDate()
-    var isCompletedToday = lastCompletedDate!!.date == today.date
+    val lastCompletedDate = habit.lastTimeCompleted.toDate()
+    var isCompletedToday = lastCompletedDate.date == today.date
     val isForToday = habit.activeDays[todayIndex]
 
 
@@ -173,7 +271,13 @@ fun HabitItem(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
-            .background(PrimaryBackground, shape = RoundedCornerShape(12.dp)),
+            .background(
+                PrimaryBackground,
+                shape = RoundedCornerShape(12.dp)
+            ),
+//        colors = CardDefaults.cardColors(
+//            containerColor = if(isCompletedToday) tertiaryGreen else MaterialTheme.colorScheme.surfaceVariant,
+//        ),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
@@ -197,7 +301,7 @@ fun HabitItem(
                         painter = painterResource(id = if (isCompletedToday) R.drawable.flame_on else R.drawable.flame_off),
                         contentDescription = "Streak Flame",
                         modifier = Modifier.size(32.dp),
-                        tint = Color.Unspecified // Keep original icon colors
+                        tint = if(habit.streak > 0) Color.Unspecified else InactiveDayColor // Keep original icon colors
                     )
                 }
 
@@ -252,7 +356,7 @@ fun HabitItem(
                     .fillMaxWidth(),
             ) {
                 // 🔻 Current day
-                    Row(
+                Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
@@ -286,18 +390,29 @@ fun HabitItem(
                                 ),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(
-                                text = days[i],
-                                fontWeight = FontWeight.Normal,
-                                color = WhitePrimaryText,
-                                fontSize = 14.sp,
-                            )
+//                            if(i == getDayOfWeek(habit.lastTimeCompleted)) {
+//                                OutlinedFilledText(
+//                                    text = days[i],
+//                                    outlineColor = StreakedDayOutline,
+//                                    fillColor = WhitePrimaryText,
+//                                    fontSize = 14.sp,
+//                                )
+//                            }else {
+                                Text(
+                                    text = days[i],
+                                    fontWeight = FontWeight.Normal,
+                                    color = WhitePrimaryText,
+                                    fontSize = 14.sp,
+                                )
+//                            }
                         }
                     }
                 }
                 // 🔺 Current day
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 10.dp),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     for (i in 0..6) {
@@ -319,8 +434,8 @@ fun HabitItem(
                     Button(
                         onClick = {
                             if (!isCompletedToday) {
-                                val updatedStreak =
-                                    if (habit.activeDays[todayIndex]) habit.streak + 1 else 0
+                                val updatedStreak = habit.streak + 1
+                                    //if (habit.activeDays[todayIndex]) habit.streak + 1 else 0
                                 val updatedHabit = habit.copy(
                                     streak = updatedStreak,
                                     lastTimeCompleted = Timestamp.now()
@@ -357,9 +472,10 @@ fun HabitItem(
                     ) {
                         Text(
                             //text = if (!isForToday) "✘" else if (isCompletedToday) "✔" else "Mark Done?",
-                            text = if (isCompletedToday) "✔" else "✘",
+                            text = if (isCompletedToday) "✔" else "Done",
                             fontSize = 14.sp,
-                            fontWeight = FontWeight.Black
+                            fontWeight = FontWeight.Black,
+                            color = if (isCompletedToday) Color.Gray else Color.Black,
                         )
                     }
                 }

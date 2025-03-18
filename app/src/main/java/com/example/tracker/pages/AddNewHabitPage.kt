@@ -192,8 +192,8 @@ fun DaySelector(day: String, isSelected: Boolean, onClick: () -> Unit) {
             .background(
                 if (isSelected) ActiveButtonColor else InactiveButtonColor,
                 shape = RoundedCornerShape(30),
-                )
-            .clickable (
+            )
+            .clickable(
                 indication = null, // Removes default ripple effect
                 interactionSource = remember { MutableInteractionSource() } // Prevents click animations
             ) { onClick() },

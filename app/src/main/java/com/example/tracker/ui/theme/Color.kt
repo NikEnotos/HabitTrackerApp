@@ -4,12 +4,12 @@ import androidx.compose.ui.graphics.Color
 
 val PrimaryGreen = Color(0xFF4CAF50)
 val SecondaryGreen = Color(0xFF66BB6A)
-val tertiaryGreen = Color(0xFF66BB6A)
+val tertiaryGreen = Color(0xFF9FB7A1)
 
 
 // Buttons
-val CompleteButtonColor = PrimaryGreen
-val IncompleteButtonColor = Color.LightGray
+val CompleteButtonColor = Color.LightGray
+val IncompleteButtonColor = SecondaryGreen
 
 val InactiveButtonColor = Color.LightGray
 val ActiveButtonColor = PrimaryGreen
@@ -37,3 +37,4 @@ val ActiveDayColor = SecondaryGreen
 val InactiveDayColor = Color.LightGray
 val CurrentDayPointerColor = Color(0xFFE57373)
 val NotCurrentDayPointerColor = Color(0x00000000)
+val StreakedDayOutline = Color(0xFFFF8A65)

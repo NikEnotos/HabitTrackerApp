@@ -14,7 +14,6 @@ import com.example.tracker.AuthViewModel
 
 @Composable
 fun UserProfilePage(modifier: Modifier = Modifier, navController: NavController, authViewModel: AuthViewModel) {
-    Text(text = "USER PROFILE")
 
     Column(
         modifier = modifier.fillMaxSize(),
