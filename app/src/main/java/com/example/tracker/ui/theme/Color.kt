@@ -6,6 +6,7 @@ val PrimaryGreen = Color(0xFF4CAF50)
 val SecondaryGreen = Color(0xFF66BB6A)
 val tertiaryGreen = Color(0xFF9FB7A1)
 
+val Invisible = Color(0x00000000)
 
 // Buttons
 val CompleteButtonColor = Color.LightGray
@@ -18,7 +19,7 @@ val PrimaryButton = PrimaryGreen
 val SecondaryButton = Color.LightGray  // Edit button
 
 val DangerousButton = Color(0xFFE57373)
-
+val InvisibleBoxBackground = Invisible
 
 // Text
 val WhitePrimaryText = Color.White
@@ -36,5 +37,5 @@ val PrimaryBackground = Color.White
 val ActiveDayColor = SecondaryGreen
 val InactiveDayColor = Color.LightGray
 val CurrentDayPointerColor = Color(0xFFE57373)
-val NotCurrentDayPointerColor = Color(0x00000000)
+val NotCurrentDayPointerColor = Invisible
 val StreakedDayOutline = Color(0xFFFF8A65)

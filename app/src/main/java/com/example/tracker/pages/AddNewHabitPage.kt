@@ -195,9 +195,10 @@ fun DaySelector(day: String, isSelected: Boolean, onClick: () -> Unit) {
             )
             .clickable(
                 indication = null, // Removes default ripple effect
-                interactionSource = remember { MutableInteractionSource() } // Prevents click animations
+                interactionSource = remember { MutableInteractionSource() }, // Prevents click animations
             ) { onClick() },
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
+
     ) {
         Text(text = day, color = WhitePrimaryText)
     }

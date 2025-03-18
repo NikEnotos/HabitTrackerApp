@@ -52,6 +52,9 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController) {
     var habits by remember {
         mutableStateOf<List<HabitModel>>(emptyList())
     }
+    var habitsNotForToday by remember {
+        mutableStateOf<List<HabitModel>>(emptyList())
+    }
     var isLoading by remember {
         mutableStateOf(true)
     }
@@ -97,21 +100,20 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController) {
 
 
                         val checkedHabit = checkMissedDays(habit, userId) { isUpdated ->
-                            if(habit.streak != 0)
-                            if (isUpdated === HabitUpdateResult.SUCCESS) {
-                                Toast.makeText(
-                                    context,
-                                    "${habit.habitName} - streak is reset to 0",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-                            else if (isUpdated === HabitUpdateResult.FAILURE) {
-                                Toast.makeText(
-                                    context,
-                                    "Failed to update streak in ${habit.habitName}",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
+                            if (habit.streak != 0)
+                                if (isUpdated === HabitUpdateResult.SUCCESS) {
+                                    Toast.makeText(
+                                        context,
+                                        "${habit.habitName} - streak is reset to 0",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                } else if (isUpdated === HabitUpdateResult.FAILURE) {
+                                    Toast.makeText(
+                                        context,
+                                        "Failed to update streak in ${habit.habitName}",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
 //                            else if (isUpdated === HabitUpdateResult.NO_UPDATE_NEEDED) {
 //                                Toast.makeText(
 //                                    context,
@@ -126,6 +128,15 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController) {
 
                     isLoading = false
 
+                    // Prioritization
+                    val todayIndex = (Timestamp.now().toDate().day + 6) % 7
+                    for (habit in habits) {
+                        val isForToday = habit.activeDays[todayIndex]
+                        if (!isForToday) {
+                            habitsNotForToday = habitsNotForToday.plus(habit)
+                            habits = habits.minus(habit)
+                        }
+                    }
                 }
         }
 
@@ -142,9 +153,14 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController) {
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(start = 16.dp, end = 16.dp, top = 30.dp, bottom = 80.dp)
+                    //.padding(start = 16.dp, end = 16.dp, top = 30.dp, bottom = 80.dp)
+                    .padding(top = 30.dp, bottom = 80.dp)
             ) {
                 items(habits) { habit ->
+                    HabitItem(habit, db, userId, navController)
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+                items(habitsNotForToday) { habit ->
                     HabitItem(habit, db, userId, navController)
                     Spacer(modifier = Modifier.height(12.dp))
                 }
@@ -153,7 +169,11 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController) {
     }
 }
 
-fun checkMissedDays(habit: HabitModel, userId: String, isUpdated: (HabitUpdateResult) -> Unit): HabitModel {
+fun checkMissedDays(
+    habit: HabitModel,
+    userId: String,
+    isUpdated: (HabitUpdateResult) -> Unit
+): HabitModel {
 
 
     val lastActivityTimestamp = habit.lastTimeCompleted
@@ -163,22 +183,28 @@ fun checkMissedDays(habit: HabitModel, userId: String, isUpdated: (HabitUpdateRe
     val diffInDays = TimeUnit.MILLISECONDS.toDays(diffInMillies).toInt()
 
     if (diffInDays > 7) {
-        return resetStreak(habit, userId){ updateResult -> isUpdated(updateResult)}
+        return resetStreak(habit, userId) { updateResult -> isUpdated(updateResult) }
     }
 
     // Calculate the difference in days between lastActivity and current
-    val lastActivityDaysSinceEpoch = TimeUnit.MILLISECONDS.toDays(lastActivityTimestamp.toDate().time)
+    val lastActivityDaysSinceEpoch =
+        TimeUnit.MILLISECONDS.toDays(lastActivityTimestamp.toDate().time)
     val currentDaysSinceEpoch = TimeUnit.MILLISECONDS.toDays(currentTimestamp.toDate().time)
 
     // Iterate through each day between lastActivity and current
     for (daysSinceEpoch in (lastActivityDaysSinceEpoch + 1) until currentDaysSinceEpoch) {
-        val currentIterationTimestamp = Timestamp(java.util.Date(TimeUnit.DAYS.toMillis(daysSinceEpoch)))
+        val currentIterationTimestamp =
+            Timestamp(java.util.Date(TimeUnit.DAYS.toMillis(daysSinceEpoch)))
         val dayOfWeek = getDayOfWeek(currentIterationTimestamp)
 
         //if (habit.activeDays[dayOfWeek] && !isSameDay(currentIterationTimestamp, lastActivityTimestamp) && !isSameDay(currentIterationTimestamp, currentTimestamp)) {
-        if (habit.activeDays[dayOfWeek] && !isSameDay(currentIterationTimestamp, currentTimestamp)) {
+        if (habit.activeDays[dayOfWeek] && !isSameDay(
+                currentIterationTimestamp,
+                currentTimestamp
+            )
+        ) {
 
-            return resetStreak(habit, userId){ updateResult -> isUpdated(updateResult)}
+            return resetStreak(habit, userId) { updateResult -> isUpdated(updateResult) }
         }
     }
 
@@ -198,11 +224,18 @@ private fun isSameDay(timestamp1: Timestamp, timestamp2: Timestamp): Boolean {
     return days1 == days2
 }
 
-private fun resetStreak(habit: HabitModel, userId: String, isUpdated: (HabitUpdateResult) -> Unit): HabitModel{
+private fun resetStreak(
+    habit: HabitModel,
+    userId: String,
+    isUpdated: (HabitUpdateResult) -> Unit
+): HabitModel {
 
     val updatedHabit = habit.copy(streak = 0)
 
-    Log.w("Reset STREAK", "Updating: ${habit.habitName} with ID '${habit.habitID}' to ${updatedHabit}")
+    Log.w(
+        "Reset STREAK",
+        "Updating: ${habit.habitName} with ID '${habit.habitID}' to ${updatedHabit}"
+    )
 
     Firebase.firestore.collection("habits")
         .document(userId)
@@ -270,7 +303,7 @@ fun HabitItem(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp)
+            .padding(vertical = 8.dp, horizontal = 24.dp)
             .background(
                 PrimaryBackground,
                 shape = RoundedCornerShape(12.dp)
@@ -298,10 +331,11 @@ fun HabitItem(
                     )
 
                     Icon(
-                        painter = painterResource(id = if (isCompletedToday) R.drawable.flame_on else R.drawable.flame_off),
+                        painter = painterResource(id = if (!isCompletedToday && isForToday) R.drawable.flame_off else R.drawable.flame_on),
                         contentDescription = "Streak Flame",
                         modifier = Modifier.size(32.dp),
-                        tint = if(habit.streak > 0) Color.Unspecified else InactiveDayColor // Keep original icon colors
+                        //tint = if (habit.streak > 0) Color.Unspecified else InactiveDayColor // Keep original icon colors
+                        tint = if (!isCompletedToday && isForToday) InactiveDayColor else Color.Unspecified// Keep original icon colors
                     )
                 }
 
@@ -398,12 +432,12 @@ fun HabitItem(
 //                                    fontSize = 14.sp,
 //                                )
 //                            }else {
-                                Text(
-                                    text = days[i],
-                                    fontWeight = FontWeight.Normal,
-                                    color = WhitePrimaryText,
-                                    fontSize = 14.sp,
-                                )
+                            Text(
+                                text = days[i],
+                                fontWeight = FontWeight.Normal,
+                                color = WhitePrimaryText,
+                                fontSize = 14.sp,
+                            )
 //                            }
                         }
                     }
@@ -431,11 +465,12 @@ fun HabitItem(
 
                 // ✅ Mark Habit as Completed Button
                 if (isForToday) {
-                    Button(
-                        onClick = {
-                            if (!isCompletedToday) {
+                    if (!isCompletedToday) {
+                        Button(
+                            onClick = {
+                                //if (!isCompletedToday) {
                                 val updatedStreak = habit.streak + 1
-                                    //if (habit.activeDays[todayIndex]) habit.streak + 1 else 0
+                                //if (habit.activeDays[todayIndex]) habit.streak + 1 else 0
                                 val updatedHabit = habit.copy(
                                     streak = updatedStreak,
                                     lastTimeCompleted = Timestamp.now()
@@ -463,20 +498,37 @@ fun HabitItem(
                                             ).show()
                                         }
                                 }
-                            }
-                        },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (isCompletedToday) CompleteButtonColor else IncompleteButtonColor,
-                        ),
-                        modifier = Modifier.align(Alignment.End),
-                    ) {
-                        Text(
-                            //text = if (!isForToday) "✘" else if (isCompletedToday) "✔" else "Mark Done?",
-                            text = if (isCompletedToday) "✔" else "Done",
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Black,
-                            color = if (isCompletedToday) Color.Gray else Color.Black,
-                        )
+                                //}
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                //containerColor = if (isCompletedToday) CompleteButtonColor else IncompleteButtonColor,
+                                containerColor = IncompleteButtonColor,
+                            ),
+                            modifier = Modifier.align(Alignment.End),
+                        ) {
+                            Text(
+                                //text = if (!isForToday) "✘" else if (isCompletedToday) "✔" else "Mark Done?",
+                                text = "Done",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Black,
+                                color = Color.White,
+                            )
+                        }
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .background(InvisibleBoxBackground)
+                                .align(Alignment.End),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.checkmark),
+                                contentDescription = "Check mark",
+                                modifier = Modifier.fillMaxSize(),
+                                tint = PrimaryGreen
+                            )
+                        }
                     }
                 }
 
