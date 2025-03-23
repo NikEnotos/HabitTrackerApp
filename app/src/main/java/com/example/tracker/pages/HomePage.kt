@@ -3,13 +3,13 @@ package com.example.tracker.pages
 
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -114,13 +114,6 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController) {
                                         Toast.LENGTH_SHORT
                                     ).show()
                                 }
-//                            else if (isUpdated === HabitUpdateResult.NO_UPDATE_NEEDED) {
-//                                Toast.makeText(
-//                                    context,
-//                                    "YOU DIDN'T MISS ${habit.habitName}",  // TODO DELETE
-//                                    Toast.LENGTH_SHORT
-//                                ).show()
-//                            }
                         }
 
                         checkedHabit
@@ -148,12 +141,11 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController) {
         }
     } else {
         if (habits.isEmpty()) {
-            // AddNewHabitButton({ })  // TODO find a way to switch to AddNewHabitPage
+            AddNewHabitButton(modifier)
         } else {
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    //.padding(start = 16.dp, end = 16.dp, top = 30.dp, bottom = 80.dp)
                     .padding(top = 30.dp, bottom = 80.dp)
             ) {
                 items(habits) { habit ->
@@ -254,32 +246,35 @@ private fun resetStreak(
 
 
 @Composable
-fun AddNewHabitButton(onClick: () -> Unit) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
+fun AddNewHabitButton(modifier: Modifier) {
 
-        ) {
-        Button(
-            onClick = onClick,
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-            contentPadding = PaddingValues(16.dp) // Add padding inside the button
-        ) {
-            Icon(
-                imageVector = Icons.Filled.Add,
-                contentDescription = "Add",
-                tint = MaterialTheme.colorScheme.onTertiary,
-                modifier = Modifier.size(28.dp) // Adjust icon size
-            )
-            Spacer(modifier = Modifier.width(8.dp)) // Add space between icon and text
-            Text(
-                text = "Add new habit",
-                color = MaterialTheme.colorScheme.onTertiary,
-                fontWeight = FontWeight.Bold,
-                fontSize = 20.sp
-            )
-        }
+    Column(
+        modifier = modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+
+        Spacer(modifier = Modifier.weight(0.5f))
+
+        Image(
+            painter = painterResource(id = R.drawable.empty),
+            contentDescription = "Login Banner",
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(180.dp)
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(text = "It's a bit empty here...", fontSize = 20.sp)
+
+        Spacer(modifier = Modifier.weight(0.5f))
+
+        Text(text = "Let's add a new habit!", fontSize = 25.sp, fontWeight = FontWeight.Bold)
+
+        Text(text = "↓", fontSize = 30.sp)
     }
+
 }
 
 @Composable
@@ -304,10 +299,6 @@ fun HabitItem(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp, horizontal = 24.dp),
-//            .background(
-//                color = Color.Black,
-//                shape = RoundedCornerShape(12.dp)
-//            ),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
         ),
@@ -331,11 +322,16 @@ fun HabitItem(
                     )
 
                     Icon(
-                        painter = painterResource(id = if (!isCompletedToday && isForToday) R.drawable.flame_off else R.drawable.flame_on),
+                        painter = painterResource(
+                            id = if (habit.streak > 0) {
+                                if (!isCompletedToday && isForToday) R.drawable.flame_off else R.drawable.flame_on
+                            } else R.drawable.lost_streak
+                        ),
                         contentDescription = "Streak Flame",
                         modifier = Modifier.size(32.dp),
-                        //tint = if (habit.streak > 0) Color.Unspecified else InactiveDayColor // Keep original icon colors
-                        tint = if (!isCompletedToday && isForToday) MaterialTheme.colorScheme.secondary else Color.Unspecified// Keep original icon colors
+                        tint = if (habit.streak > 0) {
+                            if (!isCompletedToday && isForToday) MaterialTheme.colorScheme.secondary else Color.Unspecified
+                        } else Color.Unspecified// Keep original icon colors
                     )
                 }
 
