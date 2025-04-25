@@ -148,11 +148,11 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController) {
                     .padding(top = 30.dp, bottom = 80.dp)
             ) {
                 items(habits) { habit ->
-                    HabitItem(habit, db, userId, navController)
+                    HabitItem(habit, userId, navController)
                     Spacer(modifier = Modifier.height(12.dp))
                 }
                 items(habitsNotForToday) { habit ->
-                    HabitItem(habit, db, userId, navController)
+                    HabitItem(habit, userId, navController)
                     Spacer(modifier = Modifier.height(12.dp))
                 }
             }
@@ -196,7 +196,6 @@ fun AddNewHabitBanner(modifier: Modifier) {
 @Composable
 fun HabitItem(
     habit: HabitModel,
-    db: FirebaseFirestore,
     userId: String?,
     navController: NavController
 ) {

@@ -18,7 +18,6 @@ import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import java.util.Calendar
-import java.util.concurrent.TimeUnit
 
 class HabitReminderService : Service() {
     private val TAG = "HabitReminderService"

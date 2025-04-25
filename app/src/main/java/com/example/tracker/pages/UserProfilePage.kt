@@ -308,7 +308,6 @@ fun NumberWheel(
     onValueChange: (Int) -> Unit,
     formatNumber: (Int) -> String = { it.toString() }
 ) {
-    val coroutineScope = rememberCoroutineScope()
     val initialIndex = items.indexOf(initialValue).coerceAtLeast(0)
     val listState = rememberLazyListState(initialFirstVisibleItemIndex = initialIndex)
 

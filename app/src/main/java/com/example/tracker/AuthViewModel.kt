@@ -1,19 +1,11 @@
 package com.example.tracker
 
-import android.app.AlarmManager
-import android.app.PendingIntent
-import android.content.Context
-import android.content.Intent
-import android.os.Build
-import android.util.Log
+
 import androidx.lifecycle.ViewModel
 import com.example.tracker.model.UserModel
-import com.example.tracker.receivers.HabitAlarmReceiver
-import com.example.tracker.utils.NotificationUtils
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
-import java.util.Calendar
 
 
 class AuthViewModel : ViewModel() {
