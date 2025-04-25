@@ -21,12 +21,10 @@ class HabitAlarmReceiver : BroadcastReceiver() {
         val serviceIntent = Intent(context, HabitReminderService::class.java)
         context.startService(serviceIntent)
 
-        // TODO: extract extras
         when (intent.action) {
             Intent.ACTION_BOOT_COMPLETED -> {
                 // TODO: Re-schedule alarms after device reboot
                 Log.d("HabitAlarmReceiver", "Boot completed - reschedule alarms")
-                // TODO: Here you would reschedule your alarms
             }
             "com.example.tracker.DAILY_REMINDER" -> {
                 Log.d("HabitAlarmReceiver", "Processing daily reminder")

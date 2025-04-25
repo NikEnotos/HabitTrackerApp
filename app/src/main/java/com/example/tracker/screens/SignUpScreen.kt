@@ -2,10 +2,14 @@ package com.example.tracker.screens
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.Button
@@ -46,76 +50,86 @@ fun SignUpScreen(
     val context = LocalContext.current
 
 
-    Column(
-        modifier = modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
     ) {
-        Text(text = "Sign Up", fontSize = 30.sp)
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        OutlinedTextField(value = email, onValueChange = { email = it.trim() }, label = {
-            Text(text = "Email")
-        })
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        OutlinedTextField(
-            value = password, onValueChange = { password = it }, label = {
-            Text(text = "Password")
-        }, visualTransformation = PasswordVisualTransformation()
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        OutlinedTextField(
-            value = confirmPassword,
-            onValueChange = { confirmPassword = it },
-            label = {
-                Text(text = "Confirm password")
-            },
-            visualTransformation = PasswordVisualTransformation()
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Button(
-            onClick = {
-                isLoading = true
-                authViewModel.signup(email, password, confirmPassword) { success, errorMessage ->
-                    if (success) {
-                        isLoading = false
-                        navController.navigate("home") {
-                            popUpTo("signup") { inclusive = true }
-                        }
-                    } else {
-                        isLoading = false
-                        Toast.makeText(
-                            context, errorMessage ?: "Something went wrong", Toast.LENGTH_SHORT
-                        ).show()
-                    }
-
-                }
-            },
-            enabled = email.isNotBlank() && password.isNotBlank() && confirmPassword.isNotBlank() && !isLoading,
+        Column(
+            modifier = modifier.fillMaxSize().padding(16.dp)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = "Create Account")
-        }
+            Text(text = "Sign Up", fontSize = 30.sp)
 
-        Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-        TextButton(onClick = {
-            navController.navigate("login") {
-                popUpTo("signup") { inclusive = true }
-            }
-        }) {
-            Text(
-                text = "Already have an account? Log in",
-                color = MaterialTheme.colorScheme.primary
+            OutlinedTextField(value = email, onValueChange = { email = it.trim() }, label = {
+                Text(text = "Email")
+            })
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = password, onValueChange = { password = it }, label = {
+                    Text(text = "Password")
+                }, visualTransformation = PasswordVisualTransformation()
             )
 
-        }
+            Spacer(modifier = Modifier.height(8.dp))
 
+            OutlinedTextField(
+                value = confirmPassword,
+                onValueChange = { confirmPassword = it },
+                label = {
+                    Text(text = "Confirm password")
+                },
+                visualTransformation = PasswordVisualTransformation()
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Button(
+                onClick = {
+                    isLoading = true
+                    authViewModel.signup(
+                        email,
+                        password,
+                        confirmPassword
+                    ) { success, errorMessage ->
+                        if (success) {
+                            isLoading = false
+                            navController.navigate("home") {
+                                popUpTo("signup") { inclusive = true }
+                            }
+                        } else {
+                            isLoading = false
+                            Toast.makeText(
+                                context, errorMessage ?: "Something went wrong", Toast.LENGTH_SHORT
+                            ).show()
+                        }
+
+                    }
+                },
+                enabled = email.isNotBlank() && password.isNotBlank() && confirmPassword.isNotBlank() && !isLoading,
+            ) {
+                Text(text = "Create Account")
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            TextButton(onClick = {
+                navController.navigate("login") {
+                    popUpTo("signup") { inclusive = true }
+                }
+            }) {
+                Text(
+                    text = "Already have an account? Log in",
+                    color = MaterialTheme.colorScheme.primary
+                )
+
+            }
+
+        }
     }
 }

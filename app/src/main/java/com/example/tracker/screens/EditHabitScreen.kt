@@ -35,6 +35,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -67,14 +68,14 @@ fun EditHabitScreen(modifier: Modifier = Modifier, navController: NavController,
         mutableStateOf(true)
     }
 
-    var habitTitleFieldValue by remember {
+    var habitTitleFieldValue by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(TextFieldValue(""))
     }
-    var habitDescriptionFieldValue by remember {
+    var habitDescriptionFieldValue by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(TextFieldValue(""))
     }
     // Track selected days as an array of booleans (default: all false)
-    var selectedDays by remember {
+    var selectedDays by rememberSaveable {
         mutableStateOf(List(7) { true })
     }
 

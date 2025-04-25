@@ -15,7 +15,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
@@ -27,7 +29,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -89,143 +90,149 @@ fun UserProfilePage(
         }
     }
 
-    Column(
+
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(20.dp))
+        Column(
+            modifier = modifier.fillMaxSize().padding(16.dp)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(modifier = Modifier.height(20.dp))
 
-        Text(
-            text = "User Profile",
-            fontSize = 32.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.align(Alignment.Start)
-        )
-
-        Spacer(modifier = Modifier.height(30.dp))
-
-        OutlinedTextField(
-            value = userEmailAddress,
-            enabled = false,
-            onValueChange = {},
-            readOnly = true,
-            label = {
-                Text(
-                    text = "Email address",
-                    color = MaterialTheme.colorScheme.onSecondaryContainer
-                )
-            },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
-        )
-
-        Spacer(modifier = Modifier.height(5.dp))
-
-        Text(
-            text = "Account created: $formattedDate",
-            fontSize = 12.sp,
-            color = MaterialTheme.colorScheme.onSecondaryContainer,
-            modifier = Modifier
-                .align(Alignment.Start)
-                .padding(start = 10.dp)
-        )
-
-        Spacer(modifier = Modifier.height(25.dp))
-
-        Row (modifier = Modifier.align(Alignment.Start)){
             Text(
-                text = "Notifications ",
-                fontSize = 25.sp,
-                color = MaterialTheme.colorScheme.onSecondary,
-                modifier = Modifier.align(Alignment.CenterVertically)
-            )
-
-            Switch(
-                checked = notificationsEnabled,
-                onCheckedChange = { isChecked ->
-                    notificationsEnabled = isChecked
-                    NotificationUtils.setNotificationsEnabled(context, isChecked)
-                    if (isChecked) {
-                        setNotificationsTime(context, selectedHour, selectedMinute)
-                        NotificationUtils.cancelScheduledReminders(context)
-                        NotificationUtils.cancelAllNotifications(context)
-                        scheduleHabitReminders(context, selectedHour, selectedMinute)
-                    } else {
-                        NotificationUtils.cancelScheduledReminders(context)
-                        NotificationUtils.cancelAllNotifications(context)
-                    }
-
-                },
-                modifier = Modifier.align(Alignment.CenterVertically)
-            )
-        }
-
-
-
-        Spacer(modifier = Modifier.height(15.dp))
-
-        if (!notificationsEnabled) {
-            Text(
-                text = "Select a time to receive daily reminders:",
-                fontSize = 15.sp,
-                modifier = Modifier.padding(bottom = 10.dp)
-            )
-
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(220.dp),
-                shape = RoundedCornerShape(16.dp),
-                shadowElevation = 4.dp
-            ) {
-                TimeSelector(
-                    initialHour = selectedHour,
-                    initialMinute = selectedMinute,
-                    onTimeChanged = { hour, minute ->
-                        selectedHour = hour
-                        selectedMinute = minute
-                    }
-                )
-            }
-        }
-
-        if (notificationsEnabled) {
-            Text(
-                text = "Notifications are set for: ${"%02d".format(selectedHour)}:${
-                    "%02d".format(
-                        selectedMinute
-                    )
-                }",
-                fontSize = 18.sp,
+                text = "User Profile",
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Bold,
                 modifier = Modifier.align(Alignment.Start)
             )
-        }
 
+            Spacer(modifier = Modifier.height(30.dp))
 
-
-        Spacer(modifier = Modifier.weight(0.5f))
-
-        TextButton(
-            onClick = {
-                authViewModel.logout()
-                navController.navigate("login") {
-                    popUpTo("home") { inclusive = true }
-                }
-            },
-            modifier = Modifier.align(Alignment.End)
-        ) {
-            Text(
-                text = "Logout",
-                fontSize = 20.sp,
-                color = DangerousButton
+            OutlinedTextField(
+                value = userEmailAddress,
+                enabled = false,
+                onValueChange = {},
+                readOnly = true,
+                label = {
+                    Text(
+                        text = "Email address",
+                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
             )
-        }
-        Spacer(modifier = Modifier.height(80.dp))
-    }
 
+            Spacer(modifier = Modifier.height(5.dp))
+
+            Text(
+                text = "Account created: $formattedDate",
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                modifier = Modifier
+                    .align(Alignment.Start)
+                    .padding(start = 10.dp)
+            )
+
+            Spacer(modifier = Modifier.height(25.dp))
+
+            Row(modifier = Modifier.align(Alignment.Start)) {
+                Text(
+                    text = "Notifications ",
+                    fontSize = 25.sp,
+                    color = MaterialTheme.colorScheme.onSecondary,
+                    modifier = Modifier.align(Alignment.CenterVertically)
+                )
+
+                Switch(
+                    checked = notificationsEnabled,
+                    onCheckedChange = { isChecked ->
+                        notificationsEnabled = isChecked
+                        NotificationUtils.setNotificationsEnabled(context, isChecked)
+                        if (isChecked) {
+                            setNotificationsTime(context, selectedHour, selectedMinute)
+                            NotificationUtils.cancelScheduledReminders(context)
+                            NotificationUtils.cancelAllNotifications(context)
+                            scheduleHabitReminders(context, selectedHour, selectedMinute)
+                        } else {
+                            NotificationUtils.cancelScheduledReminders(context)
+                            NotificationUtils.cancelAllNotifications(context)
+                        }
+
+                    },
+                    modifier = Modifier.align(Alignment.CenterVertically)
+                )
+            }
+
+
+
+            Spacer(modifier = Modifier.height(15.dp))
+
+            if (!notificationsEnabled) {
+                Text(
+                    text = "Select a time to receive daily reminders:",
+                    fontSize = 15.sp,
+                    modifier = Modifier
+                        .padding(bottom = 10.dp)
+                        .align(Alignment.Start)
+                )
+
+                Surface(
+                    modifier = Modifier
+                        .width(300.dp)
+                        .height(220.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    shadowElevation = 4.dp
+                ) {
+                    TimeSelector(
+                        initialHour = selectedHour,
+                        initialMinute = selectedMinute,
+                        onTimeChanged = { hour, minute ->
+                            selectedHour = hour
+                            selectedMinute = minute
+                        }
+                    )
+                }
+            }
+
+            if (notificationsEnabled) {
+                Text(
+                    text = "Notifications are set for: ${"%02d".format(selectedHour)}:${
+                        "%02d".format(
+                            selectedMinute
+                        )
+                    }",
+                    fontSize = 18.sp,
+                    modifier = Modifier.align(Alignment.Start)
+                )
+            }
+
+
+
+            Spacer(modifier = Modifier.weight(0.5f))
+
+            TextButton(
+                onClick = {
+                    authViewModel.logout()
+                    navController.navigate("login") {
+                        popUpTo("home") { inclusive = true }
+                    }
+                },
+                modifier = Modifier.align(Alignment.End)
+            ) {
+                Text(
+                    text = "Logout",
+                    fontSize = 20.sp,
+                    color = DangerousButton
+                )
+            }
+            Spacer(modifier = Modifier.height(80.dp))
+        }
+    }
 }
 
 @Composable
@@ -246,7 +253,7 @@ fun TimeSelector(
 
     Box(
         modifier = Modifier
-            .width(300.dp)
+            .width(280.dp)
             .height(200.dp)
             .padding(16.dp)
     ) {
