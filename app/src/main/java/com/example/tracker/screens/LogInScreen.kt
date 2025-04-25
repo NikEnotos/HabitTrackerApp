@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.tracker.AuthViewModel
 import com.example.tracker.R
+import com.example.tracker.utils.NotificationUtils.scheduleHabitReminders
 
 @Composable
 fun LogInScreen(
@@ -92,6 +93,7 @@ fun LogInScreen(
                 authViewModel.login(email, password) { success, errorMessage ->
                     if (success) {
                         isLoading = false
+                        scheduleHabitReminders(context, hour = 9, minute = 0)
                         navController.navigate("home") {
                             popUpTo("login") { inclusive = true }
                         }

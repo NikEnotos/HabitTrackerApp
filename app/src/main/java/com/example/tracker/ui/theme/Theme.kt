@@ -17,12 +17,12 @@ private val LightColorScheme = lightColorScheme(
     primary = Color(0xFF4CAF50),            // Bright green for buttons, active elements
     onPrimary = Color.White,                      // White text on top of the primary color
 
-    primaryContainer = Color(0xFFE7E7E7),   // Soft green for cards, surfaces, etc.
-    onPrimaryContainer = Color.Black, // Dark green text/icons on primaryContainer
+    primaryContainer = Color(0xFFE7E7E7),
+    onPrimaryContainer = Color.Black,
     onSecondaryContainer = Color.Gray,
 
-    secondary = Color(0xFFD3D3D3), // Light gray for background and secondary elements
-    onSecondary = Color.Black, // Text color on secondary elements
+    secondary = Color(0xFFD3D3D3),
+    onSecondary = Color.Black,
     onTertiary = Color.White,
 
     background = Color.White, // Main background color
@@ -37,9 +37,9 @@ private val LightColorScheme = lightColorScheme(
 
 private val DarkColorScheme = darkColorScheme(
     primary = Color(0xFF66BB6A),           // Softer green for buttons, active elements
-    onPrimary = Color(0xFF444444),                     // Dark text/icons on primary for better contrast
+    onPrimary = Color(0xFF444444),
 
-    primaryContainer = Color(0xFF626262),  // Deeper green background for cards, sheets, etc.
+    primaryContainer = Color(0xFF626262),
     onPrimaryContainer = Color.White,            // White text/icons on primaryContainer
     onSecondaryContainer = Color.LightGray,
 

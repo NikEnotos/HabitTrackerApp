@@ -32,13 +32,12 @@ import com.example.tracker.R
 import com.example.tracker.model.HabitModel
 import com.example.tracker.model.HabitUpdateResult
 import com.example.tracker.ui.theme.*
+import com.example.tracker.utils.HabitCompletionUtils
 import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
-import java.util.Calendar
-import java.util.concurrent.TimeUnit
 
 
 @Composable
@@ -99,7 +98,7 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController) {
                         )
 
 
-                        val checkedHabit = checkMissedDays(habit, userId) { isUpdated ->
+                        val checkedHabit = HabitCompletionUtils.checkMissedDays(habit, userId) { isUpdated ->
                             if (habit.streak != 0)
                                 if (isUpdated === HabitUpdateResult.SUCCESS) {
                                     Toast.makeText(
@@ -141,7 +140,7 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController) {
         }
     } else {
         if (habits.isEmpty()) {
-            AddNewHabitButton(modifier)
+            AddNewHabitBanner(modifier)
         } else {
             LazyColumn(
                 modifier = Modifier
@@ -161,92 +160,9 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController) {
     }
 }
 
-fun checkMissedDays(
-    habit: HabitModel,
-    userId: String,
-    isUpdated: (HabitUpdateResult) -> Unit
-): HabitModel {
-
-
-    val lastActivityTimestamp = habit.lastTimeCompleted
-    val currentTimestamp = Timestamp.now()
-
-    val diffInMillies = currentTimestamp.toDate().time - lastActivityTimestamp.toDate().time
-    val diffInDays = TimeUnit.MILLISECONDS.toDays(diffInMillies).toInt()
-
-    if (diffInDays > 7) {
-        return resetStreak(habit, userId) { updateResult -> isUpdated(updateResult) }
-    }
-
-    // Calculate the difference in days between lastActivity and current
-    val lastActivityDaysSinceEpoch =
-        TimeUnit.MILLISECONDS.toDays(lastActivityTimestamp.toDate().time)
-    val currentDaysSinceEpoch = TimeUnit.MILLISECONDS.toDays(currentTimestamp.toDate().time)
-
-    // Iterate through each day between lastActivity and current
-    for (daysSinceEpoch in (lastActivityDaysSinceEpoch + 1) until currentDaysSinceEpoch) {
-        val currentIterationTimestamp =
-            Timestamp(java.util.Date(TimeUnit.DAYS.toMillis(daysSinceEpoch)))
-        val dayOfWeek = getDayOfWeek(currentIterationTimestamp)
-
-        //if (habit.activeDays[dayOfWeek] && !isSameDay(currentIterationTimestamp, lastActivityTimestamp) && !isSameDay(currentIterationTimestamp, currentTimestamp)) {
-        if (habit.activeDays[dayOfWeek] && !isSameDay(
-                currentIterationTimestamp,
-                currentTimestamp
-            )
-        ) {
-
-            return resetStreak(habit, userId) { updateResult -> isUpdated(updateResult) }
-        }
-    }
-
-    isUpdated(HabitUpdateResult.NO_UPDATE_NEEDED)
-    return habit
-}
-
-private fun getDayOfWeek(timestamp: Timestamp): Int {
-    val calendar = Calendar.getInstance().apply { time = timestamp.toDate() }
-    val dayIndex = (calendar.get(Calendar.DAY_OF_WEEK) + 5) % 7
-    return dayIndex
-}
-
-private fun isSameDay(timestamp1: Timestamp, timestamp2: Timestamp): Boolean {
-    val days1 = TimeUnit.MILLISECONDS.toDays(timestamp1.toDate().time)
-    val days2 = TimeUnit.MILLISECONDS.toDays(timestamp2.toDate().time)
-    return days1 == days2
-}
-
-private fun resetStreak(
-    habit: HabitModel,
-    userId: String,
-    isUpdated: (HabitUpdateResult) -> Unit
-): HabitModel {
-
-    val updatedHabit = habit.copy(streak = 0)
-
-    Log.w(
-        "Reset STREAK",
-        "Updating: ${habit.habitName} with ID '${habit.habitID}' to ${updatedHabit}"
-    )
-
-    Firebase.firestore.collection("habits")
-        .document(userId)
-        .collection("userHabits")
-        .document(habit.habitID)
-        .set(updatedHabit)
-        .addOnSuccessListener {
-            isUpdated(HabitUpdateResult.SUCCESS)
-        }
-        .addOnFailureListener {
-            isUpdated(HabitUpdateResult.FAILURE)
-        }
-
-    return updatedHabit
-}
-
 
 @Composable
-fun AddNewHabitButton(modifier: Modifier) {
+fun AddNewHabitBanner(modifier: Modifier) {
 
     Column(
         modifier = modifier.fillMaxSize(),
@@ -464,36 +380,66 @@ fun HabitItem(
                     if (!isCompletedToday) {
                         Button(
                             onClick = {
-                                //if (!isCompletedToday) {
-                                val updatedStreak = habit.streak + 1
-                                //if (habit.activeDays[todayIndex]) habit.streak + 1 else 0
-                                val updatedHabit = habit.copy(
-                                    streak = updatedStreak,
-                                    lastTimeCompleted = Timestamp.now()
-                                )
 
-                                userId?.let {
-                                    db.collection("habits")
-                                        .document(it)
-                                        .collection("userHabits")
-                                        .document(habit.habitID)
-                                        .set(updatedHabit)
-                                        .addOnSuccessListener {
-                                            Toast.makeText(
-                                                context,
-                                                "Marked as Completed!",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-                                            isCompletedToday = true
-                                        }
-                                        .addOnFailureListener {
-                                            Toast.makeText(
-                                                context,
-                                                "Failed to update habit!",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-                                        }
+
+                                if (userId != null) {
+                                    HabitCompletionUtils.markHabitAsDone(context, habit.habitID, userId) { isUpdated ->
+                                            if (isUpdated === HabitUpdateResult.SUCCESS) {
+                                                Toast.makeText(
+                                                    context,
+                                                    "Marked as Completed!",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                                isCompletedToday = true
+                                            } else if (isUpdated === HabitUpdateResult.FAILURE) {
+                                                Toast.makeText(
+                                                    context,
+                                                    "Failed to update habit!",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            }
+                                    }
                                 }
+                                else{
+                                    Toast.makeText(
+                                        context,
+                                        "Failed to update - userId is null",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+
+
+
+
+
+//                                val updatedStreak = habit.streak + 1
+//                                val updatedHabit = habit.copy(
+//                                    streak = updatedStreak,
+//                                    lastTimeCompleted = Timestamp.now()
+//                                )
+//
+//                                userId?.let {
+//                                    db.collection("habits")
+//                                        .document(it)
+//                                        .collection("userHabits")
+//                                        .document(habit.habitID)
+//                                        .set(updatedHabit)
+//                                        .addOnSuccessListener {
+//                                            Toast.makeText(
+//                                                context,
+//                                                "Marked as Completed!",
+//                                                Toast.LENGTH_SHORT
+//                                            ).show()
+//                                            isCompletedToday = true
+//                                        }
+//                                        .addOnFailureListener {
+//                                            Toast.makeText(
+//                                                context,
+//                                                "Failed to update habit!",
+//                                                Toast.LENGTH_SHORT
+//                                            ).show()
+//                                        }
+//                                }
                                 //}
                             },
                             colors = ButtonDefaults.buttonColors(
