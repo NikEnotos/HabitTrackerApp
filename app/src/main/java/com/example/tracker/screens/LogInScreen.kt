@@ -20,7 +20,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,13 +42,13 @@ fun LogInScreen(
 ) {
 
 
-    var email by remember {
+    var email by rememberSaveable {
         mutableStateOf("")
     }
-    var password by remember {
+    var password by rememberSaveable {
         mutableStateOf("")
     }
-    var isLoading by remember {
+    var isLoading by rememberSaveable {
         mutableStateOf(false)
     }
 
@@ -60,7 +60,9 @@ fun LogInScreen(
             .fillMaxSize()
     ) {
         Column(
-            modifier = modifier.fillMaxSize().padding(16.dp)
+            modifier = modifier
+                .fillMaxSize()
+                .padding(16.dp)
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally

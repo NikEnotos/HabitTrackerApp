@@ -80,9 +80,15 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController) {
 
             db.collection("habits").document(userId).collection("userHabits")
                 .addSnapshotListener { snapshot, e ->
-                    if (e != null) {
+                    if (e != null && Firebase.auth.currentUser?.uid != null) {
                         Log.e("Firebase", "Error fetching habits", e)
-                        Toast.makeText(context, "Failed to load habits", Toast.LENGTH_SHORT).show()
+
+                        Toast.makeText(
+                            context,
+                            "Failed to load habits: ${e.message}",
+                            Toast.LENGTH_LONG
+                        ).show()
+
                         isLoading = false
                         return@addSnapshotListener
                     }
@@ -109,22 +115,23 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController) {
                         )
 
 
-                        val checkedHabit = HabitCompletionUtils.checkMissedDays(habit, userId) { isUpdated ->
-                            if (habit.streak != 0)
-                                if (isUpdated === HabitUpdateResult.SUCCESS) {
-                                    Toast.makeText(
-                                        context,
-                                        "${habit.habitName} - streak is reset to 0",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                } else if (isUpdated === HabitUpdateResult.FAILURE) {
-                                    Toast.makeText(
-                                        context,
-                                        "Failed to update streak in ${habit.habitName}",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                }
-                        }
+                        val checkedHabit =
+                            HabitCompletionUtils.checkMissedDays(habit, userId) { isUpdated ->
+                                if (habit.streak != 0)
+                                    if (isUpdated === HabitUpdateResult.SUCCESS) {
+                                        Toast.makeText(
+                                            context,
+                                            "${habit.habitName} - streak is reset to 0",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    } else if (isUpdated === HabitUpdateResult.FAILURE) {
+                                        Toast.makeText(
+                                            context,
+                                            "Failed to update streak in ${habit.habitName}",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                            }
 
                         checkedHabit
                     } ?: emptyList()
@@ -136,8 +143,10 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController) {
 
                     val forToday = allHabits.filter { it.activeDays[todayIndex] }
                     val notForToday = allHabits.filter { !it.activeDays[todayIndex] }
-                    val forTodayCompleted = forToday.filter { HabitCompletionUtils.isCompletedToday(it.lastTimeCompleted) }
-                    val forTodayNotCompleted = forToday.filter { !HabitCompletionUtils.isCompletedToday(it.lastTimeCompleted) }
+                    val forTodayCompleted =
+                        forToday.filter { HabitCompletionUtils.isCompletedToday(it.lastTimeCompleted) }
+                    val forTodayNotCompleted =
+                        forToday.filter { !HabitCompletionUtils.isCompletedToday(it.lastTimeCompleted) }
 
                     habitsForToday = forTodayNotCompleted
                     habitsForTodayDone = forTodayCompleted
@@ -415,33 +424,33 @@ fun HabitItem(
 
 
                                 if (userId != null) {
-                                    HabitCompletionUtils.markHabitAsDone(context, habit.habitID, userId) { isUpdated ->
-                                            if (isUpdated === HabitUpdateResult.SUCCESS) {
-                                                Toast.makeText(
-                                                    context,
-                                                    "Marked as Completed!",
-                                                    Toast.LENGTH_SHORT
-                                                ).show()
-                                                isCompletedToday = true
-                                            } else if (isUpdated === HabitUpdateResult.FAILURE) {
-                                                Toast.makeText(
-                                                    context,
-                                                    "Failed to update habit!",
-                                                    Toast.LENGTH_SHORT
-                                                ).show()
-                                            }
+                                    HabitCompletionUtils.markHabitAsDone(
+                                        context,
+                                        habit.habitID,
+                                        userId
+                                    ) { isUpdated ->
+                                        if (isUpdated === HabitUpdateResult.SUCCESS) {
+                                            Toast.makeText(
+                                                context,
+                                                "Marked as Completed!",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                            isCompletedToday = true
+                                        } else if (isUpdated === HabitUpdateResult.FAILURE) {
+                                            Toast.makeText(
+                                                context,
+                                                "Failed to update habit!",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
                                     }
-                                }
-                                else{
+                                } else {
                                     Toast.makeText(
                                         context,
                                         "Failed to update - userId is null",
                                         Toast.LENGTH_LONG
                                     ).show()
                                 }
-
-
-
 
 
 //                                val updatedStreak = habit.streak + 1
