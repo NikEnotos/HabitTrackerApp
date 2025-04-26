@@ -1,12 +1,8 @@
 package com.example.tracker.screens
 
 import android.widget.Toast
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -23,6 +19,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.tracker.ui.components.DaySelector
 import com.example.tracker.ui.theme.DangerousButton
 import com.example.tracker.viewmodels.HabitViewModel
 import com.example.tracker.viewmodels.HabitViewModelMode
@@ -280,40 +277,6 @@ private fun EditHabitForm(
         }
         Spacer(modifier = Modifier.height(16.dp))
 
-    }
-}
-
-
-// Helper Composable for Day Selector
-@Composable
-fun DaySelector(day: String, isSelected: Boolean, enabled: Boolean, onClick: () -> Unit) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val backgroundColor =
-        if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
-    val contentColor = MaterialTheme.colorScheme.onTertiary
-
-    Box(
-        modifier = Modifier
-            .size(40.dp)
-            .background(
-                // Adjust alpha if disabled
-                color = if (enabled) backgroundColor else backgroundColor.copy(alpha = 0.5f),
-                shape = RoundedCornerShape(30),
-            )
-            .clickable(
-                enabled = enabled,
-                indication = null,
-                interactionSource = interactionSource, // Prevents click animations
-                onClick = onClick
-            ),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text = day,
-            // Adjust alpha if disabled
-            color = if (enabled) contentColor else contentColor.copy(alpha = 0.5f),
-            fontWeight = FontWeight.Normal
-        )
     }
 }
 

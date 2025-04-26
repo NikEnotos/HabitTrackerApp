@@ -22,7 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavController
-import com.example.tracker.AuthViewModel
+import com.example.tracker.viewmodels.AuthViewModel
 import com.example.tracker.pages.AddNewHabitPage
 import com.example.tracker.pages.HomePage
 import com.example.tracker.pages.UserProfilePage

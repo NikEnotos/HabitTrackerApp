@@ -1,4 +1,4 @@
-package com.example.tracker
+package com.example.tracker.viewmodels
 
 
 import androidx.lifecycle.ViewModel

@@ -40,7 +40,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.tracker.AuthViewModel
+import com.example.tracker.viewmodels.AuthViewModel
 import com.example.tracker.ui.theme.DangerousButton
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth

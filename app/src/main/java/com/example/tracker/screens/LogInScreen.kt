@@ -30,7 +30,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.tracker.AuthViewModel
+import com.example.tracker.viewmodels.AuthViewModel
 import com.example.tracker.R
 import com.example.tracker.utils.NotificationUtils.scheduleHabitReminders
 

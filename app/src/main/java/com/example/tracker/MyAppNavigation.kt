@@ -11,6 +11,7 @@ import com.example.tracker.screens.EditHabitScreen
 import com.example.tracker.screens.HomeScreen
 import com.example.tracker.screens.LogInScreen
 import com.example.tracker.screens.SignUpScreen
+import com.example.tracker.viewmodels.AuthViewModel
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 
