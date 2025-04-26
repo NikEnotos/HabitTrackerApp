@@ -14,10 +14,10 @@ import com.example.tracker.MainActivity
 import com.example.tracker.R
 import com.example.tracker.model.HabitModel
 import com.example.tracker.receivers.HabitAlarmReceiver
+import com.example.tracker.utils.HabitCompletionUtils
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import java.util.Calendar
 
 class HabitReminderService : Service() {
     private val TAG = "HabitReminderService"
@@ -50,9 +50,9 @@ class HabitReminderService : Service() {
 
     private fun checkHabitsForToday(userId: String) {
         val db = FirebaseFirestore.getInstance()
-        val today = Calendar.getInstance().get(Calendar.DAY_OF_WEEK)
-        // Convert from Calendar day (1-7, Sunday = 1) to our app's format (0-6, Monday = 0)
-        val todayIndex = (today + 5) % 7
+
+        // indexes 0-6, Monday = 0
+        val todayIndex = HabitCompletionUtils.getDayOfWeek(Timestamp.now())
 
         db.collection("habits").document(userId).collection("userHabits")
             .get()
@@ -78,15 +78,11 @@ class HabitReminderService : Service() {
 
                     // Check if today is an active day for this habit
                     if (habit.activeDays[todayIndex]) {
+
                         // Check if the habit was completed today
-                        val lastCompletedDate = habit.lastTimeCompleted.toDate()
-                        val lastCompletedCalendar = Calendar.getInstance().apply { time = lastCompletedDate }
-                        val today = Calendar.getInstance()
+                        val isCompletedToday = HabitCompletionUtils.isCompletedToday(habit.lastTimeCompleted)
 
-                        val sameDay = lastCompletedCalendar.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR) &&
-                                lastCompletedCalendar.get(Calendar.YEAR) == today.get(Calendar.YEAR)
-
-                        if (!sameDay) {
+                        if (!isCompletedToday) {
                             habitsForToday.add(habit)
                         }
                     }

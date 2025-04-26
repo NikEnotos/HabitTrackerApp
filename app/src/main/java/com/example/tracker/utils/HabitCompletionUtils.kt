@@ -28,9 +28,7 @@ object HabitCompletionUtils {
                 val activeDays = document.get("activeDays") as? List<Boolean> ?: List(7) { false }
 
                 // Check if the habit is already completed today
-                val today = Timestamp.now().toDate()
-                val lastCompletedDate = lastTimeCompleted.toDate()
-                val isCompletedToday = lastCompletedDate.date == today.date
+                val isCompletedToday = isCompletedToday(lastTimeCompleted)
 
                 if (!isCompletedToday) {
                     val habit = HabitModel(
@@ -117,19 +115,19 @@ object HabitCompletionUtils {
         return habit
     }
 
-    private fun getDayOfWeek(timestamp: Timestamp): Int {
+    fun getDayOfWeek(timestamp: Timestamp): Int {
         val calendar = Calendar.getInstance().apply { time = timestamp.toDate() }
         val dayIndex = (calendar.get(Calendar.DAY_OF_WEEK) + 5) % 7
         return dayIndex
     }
 
-    private fun isSameDay(timestamp1: Timestamp, timestamp2: Timestamp): Boolean {
+    fun isSameDay(timestamp1: Timestamp, timestamp2: Timestamp): Boolean {
         val days1 = TimeUnit.MILLISECONDS.toDays(timestamp1.toDate().time)
         val days2 = TimeUnit.MILLISECONDS.toDays(timestamp2.toDate().time)
         return days1 == days2
     }
 
-    private fun resetStreak(
+    fun resetStreak(
         habit: HabitModel,
         userId: String,
         isUpdated: (HabitUpdateResult) -> Unit
@@ -157,4 +155,14 @@ object HabitCompletionUtils {
         return updatedHabit
     }
 
+    fun isCompletedToday(lastCompletedDate: Timestamp): Boolean {
+
+        val lastCompletedCalendar = Calendar.getInstance().apply { time = lastCompletedDate.toDate() }
+        val today = Calendar.getInstance()
+
+        val isCompletedToday = lastCompletedCalendar.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR) &&
+                lastCompletedCalendar.get(Calendar.YEAR) == today.get(Calendar.YEAR)
+
+        return isCompletedToday
+    }
 }

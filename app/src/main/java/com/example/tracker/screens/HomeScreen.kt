@@ -69,7 +69,7 @@ fun HomeScreen(modifier: Modifier = Modifier, navController: NavController, auth
             }
         }
     ) {
-        ContentScreen(modifier = modifier.padding(it), navController, authViewModel, selectedIndex)
+        ContentScreen(modifier = modifier.padding(bottom = it.calculateBottomPadding()), navController, authViewModel, selectedIndex)
     }
 
 }
@@ -80,7 +80,7 @@ fun ContentScreen(modifier: Modifier = Modifier, navController: NavController, a
     when(selectedIndex){
         0 -> HomePage(modifier, navController)
         1 -> AddNewHabitPage(modifier)
-        2 -> UserProfilePage(modifier = modifier, navController, authViewModel)
+        2 -> UserProfilePage(modifier, navController, authViewModel)
     }
 
 }

@@ -8,7 +8,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -36,7 +38,6 @@ import com.example.tracker.utils.HabitCompletionUtils
 import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.auth
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
 
 
@@ -48,12 +49,22 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController) {
     val userId = Firebase.auth.currentUser?.uid
     val user = Firebase.auth.currentUser
 
-    var habits by remember {
+    var habitsForToday by remember {
+        mutableStateOf<List<HabitModel>>(emptyList())
+    }
+    var habitsForTodayDone by remember {
         mutableStateOf<List<HabitModel>>(emptyList())
     }
     var habitsNotForToday by remember {
         mutableStateOf<List<HabitModel>>(emptyList())
     }
+
+    val sortedHabitsForToday by remember(habitsForToday, habitsForTodayDone, habitsNotForToday) {
+        derivedStateOf {
+            sortHabits(habitsForToday + habitsForTodayDone + habitsNotForToday)
+        }
+    }
+
     var isLoading by remember {
         mutableStateOf(true)
     }
@@ -77,7 +88,7 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController) {
                     }
 
                     // ✅ Manually extracting data instead of using `.toObject()`
-                    habits = snapshot?.documents?.mapNotNull { document ->
+                    val allHabits = snapshot?.documents?.mapNotNull { document ->
                         val habitID = document.getString("habitID") ?: return@mapNotNull null
                         val habitName = document.getString("habitName") ?: return@mapNotNull null
                         val habitDescription =
@@ -121,14 +132,16 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController) {
                     isLoading = false
 
                     // Prioritization
-                    val todayIndex = (Timestamp.now().toDate().day + 6) % 7
-                    for (habit in habits) {
-                        val isForToday = habit.activeDays[todayIndex]
-                        if (!isForToday) {
-                            habitsNotForToday = habitsNotForToday.plus(habit)
-                            habits = habits.minus(habit)
-                        }
-                    }
+                    val todayIndex = HabitCompletionUtils.getDayOfWeek(Timestamp.now())
+
+                    val forToday = allHabits.filter { it.activeDays[todayIndex] }
+                    val notForToday = allHabits.filter { !it.activeDays[todayIndex] }
+                    val forTodayCompleted = forToday.filter { HabitCompletionUtils.isCompletedToday(it.lastTimeCompleted) }
+                    val forTodayNotCompleted = forToday.filter { !HabitCompletionUtils.isCompletedToday(it.lastTimeCompleted) }
+
+                    habitsForToday = forTodayNotCompleted
+                    habitsForTodayDone = forTodayCompleted
+                    habitsNotForToday = notForToday
                 }
         }
 
@@ -139,19 +152,13 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController) {
             CircularProgressIndicator()
         }
     } else {
-        if (habits.isEmpty()) {
+        if (habitsForToday.isEmpty() && habitsForTodayDone.isEmpty() && habitsNotForToday.isEmpty()) {
             AddNewHabitBanner(modifier)
         } else {
             LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(top = 30.dp, bottom = 80.dp)
+                modifier.fillMaxSize()
             ) {
-                items(habits) { habit ->
-                    HabitItem(habit, userId, navController)
-                    Spacer(modifier = Modifier.height(12.dp))
-                }
-                items(habitsNotForToday) { habit ->
+                items(sortedHabitsForToday) { habit ->
                     HabitItem(habit, userId, navController)
                     Spacer(modifier = Modifier.height(12.dp))
                 }
@@ -160,12 +167,41 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController) {
     }
 }
 
+fun sortHabits(habits: List<HabitModel>): List<HabitModel> {
+    val todayIndex = HabitCompletionUtils.getDayOfWeek(Timestamp.now())
+
+    return habits.sortedWith(compareBy<HabitModel> {
+        // First priority: For today, not completed
+        if (it.activeDays[todayIndex] && !HabitCompletionUtils.isCompletedToday(it.lastTimeCompleted)) {
+            0
+        } else {
+            1 // Otherwise, not the highest priority
+        }
+    }.thenBy {
+        // Second priority: For today, completed
+        if (it.activeDays[todayIndex] && HabitCompletionUtils.isCompletedToday(it.lastTimeCompleted)) {
+            0
+        } else {
+            1 // Otherwise, not the second highest priority
+        }
+    }.thenBy {
+        // Third priority: Not for today
+        if (!it.activeDays[todayIndex]) {
+            0
+        } else {
+            1
+        }
+    })
+}
+
 
 @Composable
 fun AddNewHabitBanner(modifier: Modifier) {
 
     Column(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -202,11 +238,8 @@ fun HabitItem(
     val context = LocalContext.current
 
     // Check if habit is completed today
-    val todayIndex = (Timestamp.now().toDate().day + 6) % 7
-
-    val today = Timestamp.now().toDate()
-    val lastCompletedDate = habit.lastTimeCompleted.toDate()
-    var isCompletedToday = lastCompletedDate.date == today.date
+    val todayIndex = HabitCompletionUtils.getDayOfWeek(Timestamp.now())
+    var isCompletedToday = HabitCompletionUtils.isCompletedToday(habit.lastTimeCompleted)
     val isForToday = habit.activeDays[todayIndex]
 
 
