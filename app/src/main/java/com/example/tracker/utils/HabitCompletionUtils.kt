@@ -1,6 +1,5 @@
 package com.example.tracker.utils
 
-import android.content.Context
 import android.util.Log
 import com.example.tracker.model.HabitModel
 import com.example.tracker.model.HabitUpdateResult
@@ -12,7 +11,7 @@ import java.util.Calendar
 import java.util.concurrent.TimeUnit
 
 object HabitCompletionUtils {
-    fun markHabitAsDone(context: Context, habitId: String, userId: String, isUpdated: (HabitUpdateResult) -> Unit) {
+    fun markHabitAsDone(habitId: String, userId: String, isUpdated: (HabitUpdateResult) -> Unit) {
         val db = FirebaseFirestore.getInstance()
 
         db.collection("habits").document(userId).collection("userHabits")
@@ -54,7 +53,7 @@ object HabitCompletionUtils {
                         .document(habitId)
                         .set(updatedHabit)
                         .addOnSuccessListener {
-                            Log.d("HabitCompletionUtils", "Habit marked as done from notification")
+                            Log.d("HabitCompletionUtils", "Habit marked as done")
                             isUpdated(HabitUpdateResult.SUCCESS)
                         }
                         .addOnFailureListener { e ->
@@ -78,12 +77,11 @@ object HabitCompletionUtils {
         isUpdated: (HabitUpdateResult) -> Unit
     ): HabitModel {
 
-
         val lastActivityTimestamp = habit.lastTimeCompleted
         val currentTimestamp = Timestamp.now()
 
-        val diffInMillies = currentTimestamp.toDate().time - lastActivityTimestamp.toDate().time
-        val diffInDays = TimeUnit.MILLISECONDS.toDays(diffInMillies).toInt()
+        val diffInMilliSec = currentTimestamp.toDate().time - lastActivityTimestamp.toDate().time
+        val diffInDays = TimeUnit.MILLISECONDS.toDays(diffInMilliSec).toInt()
 
         if (diffInDays > 7) {
             return resetStreak(habit, userId) { updateResult -> isUpdated(updateResult) }
@@ -106,7 +104,6 @@ object HabitCompletionUtils {
                     currentTimestamp
                 )
             ) {
-
                 return resetStreak(habit, userId) { updateResult -> isUpdated(updateResult) }
             }
         }

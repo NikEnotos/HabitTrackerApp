@@ -45,7 +45,7 @@ class HabitAlarmReceiver : BroadcastReceiver() {
 
                 val userId = FirebaseAuth.getInstance().currentUser?.uid
                 if (habitId != null && userId != null) {
-                    HabitCompletionUtils.markHabitAsDone(context, habitId, userId){ isUpdated ->
+                    HabitCompletionUtils.markHabitAsDone(habitId, userId){ isUpdated ->
                         if (isUpdated === HabitUpdateResult.SUCCESS) {
                             Log.d("HabitAlarmReceiver", "Mark habit done: $habitId")
                         } else if (isUpdated === HabitUpdateResult.FAILURE) {
