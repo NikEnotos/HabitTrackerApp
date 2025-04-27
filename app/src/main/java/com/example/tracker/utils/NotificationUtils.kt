@@ -19,7 +19,7 @@ object NotificationUtils {
 
     fun areNotificationsEnabled(context: Context): Boolean {
         val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        return prefs.getBoolean(NOTIFICATIONS_ENABLED_KEY, true) // Default to enabled
+        return prefs.getBoolean(NOTIFICATIONS_ENABLED_KEY, false) // Default to disabled
     }
 
     fun setNotificationsEnabled(context: Context, enabled: Boolean) {
