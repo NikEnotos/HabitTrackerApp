@@ -50,6 +50,10 @@ import java.util.Locale
 import com.example.tracker.utils.NotificationUtils
 import com.example.tracker.utils.NotificationUtils.scheduleHabitReminders
 import com.example.tracker.utils.NotificationUtils.setNotificationsTime
+import androidx.core.app.NotificationManagerCompat
+import androidx.compose.material3.AlertDialog
+import android.provider.Settings
+import android.content.Intent
 
 @Composable
 fun UserProfilePage(
@@ -62,14 +66,19 @@ fun UserProfilePage(
     val context = LocalContext.current
 
     var userEmailAddress by remember {
-        mutableStateOf("Can't load your email address")
+        mutableStateOf("Loading...")
     }
     var formattedDate by remember {
-        mutableStateOf("can't load this info")
+        mutableStateOf("Loading...")
     }
     var notificationsEnabled by remember {
         mutableStateOf(NotificationUtils.areNotificationsEnabled(context))
     }
+    // State to track actual system notification status
+    var systemNotificationsEnabled by remember {
+        mutableStateOf(NotificationManagerCompat.from(context).areNotificationsEnabled())
+    }
+    var showPermissionDialog by remember { mutableStateOf(false) }
 
     val preferredTime = NotificationUtils.getNotificationsTime(context)
 
@@ -88,6 +97,16 @@ fun UserProfilePage(
             formattedDate = dateFormat.format(creationDate)
 
         }
+    }
+
+    // Function to open app's notification settings
+    fun openAppSettingsNotificationSettings() {
+        val intent = Intent().apply {
+            action = Settings.ACTION_APP_NOTIFICATION_SETTINGS
+            putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+        context.startActivity(intent)
     }
 
 
@@ -142,31 +161,58 @@ fun UserProfilePage(
             Text(
                 text = "Notifications ",
                 fontSize = 25.sp,
-                color = MaterialTheme.colorScheme.onSecondary,
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
                 modifier = Modifier.align(Alignment.CenterVertically)
             )
 
             Switch(
-                checked = notificationsEnabled,
+                checked = notificationsEnabled && systemNotificationsEnabled,
+
                 onCheckedChange = { isChecked ->
+                    systemNotificationsEnabled =
+                        NotificationManagerCompat.from(context).areNotificationsEnabled()
                     notificationsEnabled = isChecked
                     NotificationUtils.setNotificationsEnabled(context, isChecked)
-                    if (isChecked) {
-                        setNotificationsTime(context, selectedHour, selectedMinute)
+                    if (systemNotificationsEnabled) {
                         NotificationUtils.cancelScheduledReminders(context)
                         NotificationUtils.cancelAllNotifications(context)
-                        scheduleHabitReminders(context, selectedHour, selectedMinute)
-                    } else {
-                        NotificationUtils.cancelScheduledReminders(context)
-                        NotificationUtils.cancelAllNotifications(context)
+                        if (isChecked) {
+                            setNotificationsTime(context, selectedHour, selectedMinute)
+                            scheduleHabitReminders(context, selectedHour, selectedMinute)
+                        }
                     }
-
+                    else {
+                        showPermissionDialog = true
+                        notificationsEnabled = false
+                    }
                 },
                 modifier = Modifier.align(Alignment.CenterVertically)
             )
         }
 
-
+        // Permission Rationale Dialog
+        if (showPermissionDialog) {
+            AlertDialog(
+                onDismissRequest = { showPermissionDialog = false },
+                title = { Text("Enable Notifications") },
+                text = { Text("To receive habit reminders, please allow notifications for this app in your device settings.") },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            showPermissionDialog = false
+                            openAppSettingsNotificationSettings() // Go to settings
+                        }
+                    ) {
+                        Text("Go to Settings")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showPermissionDialog = false }) {
+                        Text("Cancel")
+                    }
+                }
+            )
+        }
 
         Spacer(modifier = Modifier.height(15.dp))
 
@@ -197,13 +243,13 @@ fun UserProfilePage(
             }
         }
 
-        if (notificationsEnabled) {
+        else if (systemNotificationsEnabled && notificationsEnabled) {
             Text(
-                text = "Notifications are set for: ${"%02d".format(selectedHour)}:${
+                text = "Notification is set for ${"%02d".format(selectedHour)}:${
                     "%02d".format(
                         selectedMinute
                     )
-                }",
+                } daily!",
                 fontSize = 18.sp,
                 modifier = Modifier.align(Alignment.Start)
             )
